@@ -29,6 +29,9 @@
 			<tenant:eventListenerConfig id="Reindex">
 				<tenant:className>org.collectionspace.services.listener.Reindex</tenant:className>
 			</tenant:eventListenerConfig>
+			<tenant:eventListenerConfig id="CSpaceAuditLogger">
+				<tenant:className>org.collectionspace.services.listener.CSpaceAuditLogger</tenant:className>
+			</tenant:eventListenerConfig>
 		</tenant:eventListenerConfigurations>
 		<tenant:properties>
 			<!-- Controls whether term completion (aka partial term matching, aka autocomplete) searches will automatically insert
