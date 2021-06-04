@@ -661,6 +661,7 @@
 				<artifactId>nuxeo-runtime-datasource</artifactId>
 				<version>${nuxeo.core.version}</version>
 			</dependency>
+
 			<!-- End of Nuxeo dependencies -->
 
 			<!-- Tomcat -->

@@ -32,6 +32,7 @@ public class AuditClient extends AbstractCommonListPoxServiceClientImpl<AuditPro
     public static final String SERVICE_PATH = "/" + SERVICE_PATH_COMPONENT;
     public static final String SERVICE_PATH_PROXY = SERVICE_PATH + "/";
     public static final String SERVICE_PAYLOAD_NAME = SERVICE_NAME;
+    public static final String SERVICE_LISTENER_NAME = "cspaceauditlogger";
 
     public AuditClient() throws Exception {
 		super();
