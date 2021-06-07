@@ -21,16 +21,12 @@ import org.nuxeo.ecm.platform.audit.api.LogEntry;
 import org.nuxeo.runtime.api.Framework;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,21 +41,22 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 	private static final Logger logger = LoggerFactory.getLogger(CSpaceAuditLogger.class);
 	
 	private static final List<String> SYSTEM_PROPS = Arrays.asList("dc:created", "dc:creator", "dc:modified",
-			"dc:contributors", "dc:title");
-	
+			"dc:contributors", "dc:title", "collectionspace_core:updatedAt");
+
 	public static final String EVENT_ID = "Property Modification";
 	public static final String FIELD_NAME = "fieldname";
 	public static final String OLD_VALUE = "oldValue";
 	public static final String NEW_VALUE = "newValue";
+	public static final String COMMENT_VALUE = "commentValue";
 	public static final String EMPTY_VALUE = "[EMPTY]";
-	
+
 	@Override
 	public void handleCSEvent(Event event) {
 		EventContext ectx = event.getContext();
 		if (!(ectx instanceof DocumentEventContext)) {
 			return;
 		}
-	
+
 		AuditLogger logger = Framework.getLocalService(AuditLogger.class);
 		if (logger == null) {
 			getLogger().error("No AuditLogger implementation is available");
@@ -79,8 +76,8 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		}
 	}
 	
-	private List<LogEntry> processNewDocument(Context context) {
-		List<LogEntry> entries = new ArrayList<>();
+	private List<FieldEntry> processNewDocument(Context context) {
+		List<FieldEntry> entries = new ArrayList<>();
 
 		String[] schemas = context.newDoc.getSchemas();
 		for (String schema : schemas) {
@@ -92,21 +89,21 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 					continue;
 				}
 
-				List<LogEntry> subEntries = processProperty(context, null, property);
+				List<FieldEntry> subEntries = processProperty(context, null, property);
 				if (subEntries != null && !subEntries.isEmpty()) {
 					entries.addAll(subEntries);
 				}
 			}
 		}
-		
+
 		return entries;
 	}
-	
+
 	protected void processDocument(Context context) {
-		List<LogEntry> entries = new ArrayList<>();
+		List<FieldEntry> entries = new ArrayList<>();
 	
 		if (context.event.getName().equalsIgnoreCase(DocumentEventTypes.DOCUMENT_CREATED)) {
-			List<LogEntry> subEntries = processNewDocument(context);
+			List<FieldEntry> subEntries = processNewDocument(context);
 			if (subEntries != null && !subEntries.isEmpty()) {
 				entries.addAll(subEntries);
 			}
@@ -123,7 +120,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		
 					if (property.isDirty()) {
 						Property oldProperty = context.oldDoc.getProperty(fieldName);
-						List<LogEntry> subEntries = processProperty(context, oldProperty, property);
+						List<FieldEntry> subEntries = processProperty(context, oldProperty, property);
 						if (subEntries != null && !subEntries.isEmpty()) {
 							entries.addAll(subEntries);
 						}
@@ -133,7 +130,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		}
 
 		if (entries.size() > 0) {
-			context.logger.addLogEntries(entries);
+			context.addFieldEntries(entries);
 		}
 	}
 	
@@ -236,13 +233,13 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 	}
 
 	
-	protected List<LogEntry> processProperty(Context context, Property oldProperty, Property newProperty) {
+	protected List<FieldEntry> processProperty(Context context, Property oldProperty, Property newProperty) {
 	
-		List<LogEntry> entries = new ArrayList<>();
+		List<FieldEntry> entries = new ArrayList<>();
 	
 		// Handle Scalar Properties
 		if (isScalar(oldProperty, newProperty)) {
-			LogEntry entry = processScalarProperty(context, oldProperty, newProperty);
+			FieldEntry entry = processScalarProperty(context, oldProperty, newProperty);
 			if (entry != null) {
 				entries.add(entry);
 			}
@@ -251,12 +248,12 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		// Handle Complex Properties
 		if (isComplex(oldProperty, newProperty) && !isList(oldProperty, newProperty)) {
 			if (isBlob(oldProperty, newProperty)) {
-				LogEntry entry = processBlobProperty(context, oldProperty, newProperty);
+				FieldEntry entry = processBlobProperty(context, oldProperty, newProperty);
 				if (entry != null) {
 					entries.add(entry);
 				}
 			} else {
-				List<LogEntry> subEntries = processComplexProperty(context, oldProperty, newProperty);
+				List<FieldEntry> subEntries = processComplexProperty(context, oldProperty, newProperty);
 				if (subEntries != null && !subEntries.isEmpty()) {
 					entries.addAll(subEntries);
 				}
@@ -265,7 +262,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 
 		if (isList(oldProperty, newProperty)) {
 			if (isArray(oldProperty, newProperty)) {
-				List<LogEntry> subEntries = 
+				List<FieldEntry> subEntries = 
 						processScalarList(context, getXPath(oldProperty, newProperty),
 								oldProperty != null ? oldProperty.getValue() : null, 
 								newProperty != null ? newProperty.getValue() : null);
@@ -273,7 +270,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 					entries.addAll(subEntries);
 				}
 			} else {
-				List<LogEntry> subEntries = processComplexProperty(context, oldProperty, newProperty);
+				List<FieldEntry> subEntries = processComplexProperty(context, oldProperty, newProperty);
 				if (subEntries != null && !subEntries.isEmpty()) {
 					entries.addAll(subEntries);
 				}
@@ -284,17 +281,24 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		return entries;
 	}
 	
-	protected LogEntry processScalarProperty(Context context, Property oldProperty, Property newProperty) {
+	protected FieldEntry processScalarProperty(Context context, Property oldProperty, Property newProperty) {
 		return getEntry(context, getXPath(oldProperty, newProperty),
 				oldProperty != null ? oldProperty.getValue() : null,
 				newProperty != null ? newProperty.getValue() : null);
+	}
+	
+	private String getFieldQualifier(long value) {
+	    String result = String.format(".%04X", value);
+
+	    return result;
 	}
 
 	/*
 	 * 
 	 */
-	protected List<LogEntry> processScalarList(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
-		List<LogEntry> entries = new ArrayList<>();
+	protected List<FieldEntry> processScalarList(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
+		List<FieldEntry> entries = new ArrayList<>();
+		long fieldQualifierValue = 1000; // use to create a unique suffix to qualify field name for list items
 	
 		ArrayList<?> oldList = null;
 		if (oldValue != null) {
@@ -306,7 +310,6 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			newList = (ArrayList<?>) ((ArrayList<?>)newValue).clone();
 		}
 
-	
 		fieldName = normalizeFieldName(fieldName);
 	
 		// log New/Added list items
@@ -316,9 +319,10 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 				added.removeAll(oldList);
 			}
 			for (Object addedValue : added) {
-				LogEntry entry = getEntry(context, fieldName, null, (Serializable) addedValue);
+				String fieldQualifier = getFieldQualifier(fieldQualifierValue++);
+				FieldEntry entry = getEntry(context, fieldName + fieldQualifier, null, (Serializable) addedValue);
 				if (entry != null) {
-					entry.setComment(fieldName + " : Added " + formatPropertyValue((Serializable) addedValue));
+					entry.setComment(fieldName + fieldQualifier, fieldName + " : Added " + formatPropertyValue((Serializable) addedValue));
 					entries.add(entry);
 				}
 			}
@@ -329,9 +333,10 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			ArrayList<?> removed = new ArrayList<>(oldList);
 			removed.removeAll(newList);
 			for (Object removedValue : removed) {
-				LogEntry entry = getEntry(context, fieldName, (Serializable) removedValue, null);
+				String fieldQualifier = getFieldQualifier(fieldQualifierValue++);
+				FieldEntry entry = getEntry(context, fieldName + fieldQualifier, (Serializable) removedValue, null);
 				if (entry != null) {
-					entry.setComment(fieldName + " : Removed " + formatPropertyValue((Serializable) removedValue));
+					entry.setComment(fieldName + fieldQualifier, fieldName + " : Removed " + formatPropertyValue((Serializable) removedValue));
 					entries.add(entry);
 				}
 			}
@@ -377,8 +382,8 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		return resultList;
 	}
 
-	protected List<LogEntry> processComplexProperty(Context context, Property oldProperty, Property newProperty) {
-		List<LogEntry> entries = new ArrayList<>();
+	protected List<FieldEntry> processComplexProperty(Context context, Property oldProperty, Property newProperty) {
+		List<FieldEntry> entries = new ArrayList<>();
 		
 		if (isListOfComplexType(oldProperty) || isListOfComplexType(newProperty)) {
 			ArrayList<Property> oldPropertyList = getListAsArray((ListProperty)oldProperty);
@@ -402,7 +407,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			for (int i = 0; i < listSize; i++) {
 				Property oldListItem = (i < oldListSize) ? oldPropertyList.get(i) : null;
 				Property newListItem = (i < newListSize) ? newPropertyList.get(i) : null;
-				List<LogEntry> subEntries = processComplexProperty(context, oldListItem, newListItem);
+				List<FieldEntry> subEntries = processComplexProperty(context, oldListItem, newListItem);
 				if (subEntries != null && !subEntries.isEmpty()) {
 					entries.addAll(subEntries);
 				}
@@ -418,7 +423,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 				if (oldProperty == null) {
 					childProperties = newProperty.getChildren().iterator();
 				} else {
-					newProperty.getDirtyChildren();
+					childProperties = newProperty.getDirtyChildren();
 				}
 				while (childProperties.hasNext()) {
 					Property dirtyProperty = childProperties.next();
@@ -438,7 +443,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		return entries;
 	}
 
-	protected LogEntry processBlobProperty(Context context, Property oldProperty, Property newProperty) {
+	protected FieldEntry processBlobProperty(Context context, Property oldProperty, Property newProperty) {
 		Blob oldBlob = (Blob) oldProperty.getValue();
 		String oldFilename = oldBlob != null ? oldBlob.getFilename() : null;
 		Blob newBlob = (Blob) newProperty.getValue();
@@ -446,7 +451,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		return getEntry(context, oldProperty.getXPath(), oldFilename, newFilename);
 	}
 
-	protected LogEntry getEntry(Context context, String fieldName, String comment, Serializable oldValue, Serializable newValue) {
+	protected FieldEntry getEntry(Context context, String fieldName, String comment, Serializable oldValue, Serializable newValue) {
 		String formatedOldValue = formatPropertyValue(oldValue);
 		String formatedNewValue = formatPropertyValue(newValue);
 
@@ -462,41 +467,22 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			}
 		}
 
-		LogEntry entry = null;
-		AuditLogger logger = context.logger;
-		Event event = context.event;
-		DocumentModel doc = context.newDoc;
-
-		String cspaceUser = AuthN.get().getUserId();
-		entry = logger.newLogEntry();
-		entry.setEventId(context.eventID.toString());
-		entry.setCategory(context.event.getName());
-		entry.setEventDate(new Date(event.getTime()));
-		entry.setDocUUID(doc.getRef());
-		entry.setDocLifeCycle(doc.getCurrentLifeCycleState());
-		entry.setPrincipalName(cspaceUser);
-		entry.setRepositoryId(doc.getRepositoryName());
-
+		FieldEntry entry = new FieldEntry(context);
 		fieldName = normalizeFieldName(fieldName);
-
-		Map<String, ExtendedInfo> extended = new HashMap<>();
-		extended.put(FIELD_NAME, logger.newExtendedInfo(fieldName));
-
-		extended.put(OLD_VALUE, logger.newExtendedInfo(formatedOldValue != null ? formatedOldValue : EMPTY_VALUE));
-		extended.put(NEW_VALUE, logger.newExtendedInfo(formatedNewValue != null ? formatedNewValue : EMPTY_VALUE));
-		entry.setExtendedInfos(extended);
+		entry.setOldValue(fieldName, formatedOldValue);
+		entry.setNewValue(fieldName, formatedNewValue);
 
 		if (comment == null) {
-			entry.setComment(fieldName + " : " + (formatedOldValue != null ? formatedOldValue : EMPTY_VALUE) + " -> " +
+			entry.setComment(fieldName, fieldName + " : " + (formatedOldValue != null ? formatedOldValue : EMPTY_VALUE) + " -> " +
 					(formatedNewValue != null ? formatedNewValue : EMPTY_VALUE));
 		} else {
-			entry.setComment(comment);
+			entry.setComment(fieldName, comment);
 		}
 
 		return entry;
 	}
 
-	protected LogEntry getEntry(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
+	protected FieldEntry getEntry(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
 		return getEntry(context, fieldName, null /*no comment*/, oldValue, newValue);
 	}
 
@@ -521,23 +507,94 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			return fieldName;
 		}
 	}
-	
+
+	class FieldEntry extends HashMap<String, ExtendedInfo> {
+		Context context;
+		
+		public FieldEntry(Context context) {
+			this.context = context;
+		}
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		public void setOldValue(String fieldName, Serializable oldValue) {
+			put(fieldName + "." + OLD_VALUE, context.logger.newExtendedInfo(oldValue != null ? oldValue : EMPTY_VALUE));
+		}	
+		
+		public void setNewValue(String fieldName, Serializable newValue) {
+			put(fieldName + "." + NEW_VALUE, context.logger.newExtendedInfo(newValue != null ? newValue : EMPTY_VALUE));
+		}
+		
+		public void setComment(String fieldName, Serializable oldValue, Serializable newValue) {
+			put(fieldName + "." + COMMENT_VALUE, context.logger.newExtendedInfo(oldValue != null ? oldValue : EMPTY_VALUE));
+		}
+		
+		public void setComment(String fieldName, Serializable comment) {
+			put(fieldName + "." + COMMENT_VALUE, context.logger.newExtendedInfo(comment));
+		}
+	}
+
+	//
+	// Inner class for managing Nuxeo audit service context
+	//
 	class Context {
 		private UUID eventID;
 		private DocumentModel newDoc;
 		private DocumentModel oldDoc;
 		private Event event;
 		private AuditLogger logger;
-	
+		private LogEntry entry;
+		
 		public Context(DocumentModel newDoc, DocumentModel oldDoc, Event event, AuditLogger logger) {
 			this.newDoc = newDoc;
 			this.oldDoc = oldDoc;
 			this.event = event;
 			this.logger = logger;
 			this.eventID = UUID.randomUUID();
+			//
+			// Create and set the Nuxeo audit entry
+			//
+			entry = logger.newLogEntry();
+			entry.setEventId(eventID.toString());
+			entry.setCategory(event.getName());
+			entry.setEventDate(new Date(event.getTime()));
+			entry.setDocUUID(newDoc.getRef());
+			entry.setDocLifeCycle(newDoc.getCurrentLifeCycleState());
+			entry.setRepositoryId(newDoc.getRepositoryName());
+			//
+			// Set the actor/user who's action triggered this audit entry
+			//
+			String cspaceUser = AuthN.get().getUserId();
+			entry.setPrincipalName(cspaceUser);
+			//
+			// Create an extended map for logging field value changes
+			//
+			Map<String, ExtendedInfo> extended = new HashMap<>();
+			entry.setExtendedInfos(extended);
+		}
+
+		//
+		// Add fieldEntries to the Nuxeo audit entry
+		//
+		public void addFieldEntries(List<FieldEntry> fieldEntries) {
+			if (fieldEntries != null && !fieldEntries.isEmpty()) {
+				Map<String, ExtendedInfo> extendedInfos = entry.getExtendedInfos();
+				for (FieldEntry entry : fieldEntries) {
+					extendedInfos.putAll(entry);
+				}
+				//
+				// Each audit event will result in a single Nuxeo log entry
+				//
+				List<LogEntry> entries = new ArrayList<>();
+				entries.add(entry);
+				logger.addLogEntries(entries);
+			}
 		}
 	}
-	
+
 	@Override
 	public boolean shouldHandleEvent(Event event) {
 		return true;
