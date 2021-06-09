@@ -23,14 +23,149 @@
  */
 package org.collectionspace.services.audit.nuxeo;
 
+import java.util.List;
+
 import org.collectionspace.services.audit.AuditCommon;
+import org.collectionspace.services.audit.AuditCommonList;
+import org.collectionspace.services.common.api.RefName.RefNameInterface;
+import org.collectionspace.services.common.context.ServiceContext;
+import org.collectionspace.services.common.document.AbstractDocumentHandlerImpl;
+import org.collectionspace.services.common.document.AbstractMultipartDocumentHandlerImpl;
+import org.collectionspace.services.common.document.DocumentException;
+import org.collectionspace.services.common.document.DocumentFilter;
+import org.collectionspace.services.common.document.DocumentWrapper;
+import org.collectionspace.services.lifecycle.Lifecycle;
+import org.collectionspace.services.lifecycle.TransitionDef;
 import org.collectionspace.services.nuxeo.client.java.NuxeoDocumentModelHandler;
+import org.nuxeo.ecm.core.api.DocumentModel;
 
 /** AuditDocumentModelHandler
  *  $LastChangedRevision$
  *  $LastChangedDate$
  */
 public class AuditDocumentModelHandler
-        extends NuxeoDocumentModelHandler<AuditCommon> {
-}
+        extends AbstractDocumentHandlerImpl<AuditCommon, AuditCommonList, AuditCommon, AuditCommonList> {
+
+	@Override
+	public Lifecycle getLifecycle() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Lifecycle getLifecycle(String serviceObjectName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void handleWorkflowTransition(ServiceContext ctx, DocumentWrapper<DocumentModel> wrapDoc,
+			TransitionDef transitionDef) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AuditCommonList extractPagingInfo(AuditCommonList theCommonList, DocumentWrapper<AuditCommonList> wrapDoc)
+			throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean supportsWorkflowStates() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	protected String getRefnameDisplayName(DocumentWrapper<AuditCommon> docWrapper) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected RefNameInterface getRefName(DocumentWrapper<AuditCommon> docWrapper, String tenantName,
+			String serviceName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public DocumentFilter createDocumentFilter() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void handleCreate(DocumentWrapper<AuditCommon> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void handleUpdate(DocumentWrapper<AuditCommon> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void handleGet(DocumentWrapper<AuditCommon> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void handleGetAll(DocumentWrapper<AuditCommonList> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AuditCommon extractCommonPart(DocumentWrapper<AuditCommon> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void fillCommonPart(AuditCommon obj, DocumentWrapper<AuditCommon> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AuditCommonList extractCommonPartList(DocumentWrapper<AuditCommonList> wrapDoc) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AuditCommon getCommonPart() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setCommonPart(AuditCommon obj) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AuditCommonList getCommonPartList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setCommonPartList(AuditCommonList obj) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getQProperty(String prop) throws DocumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}}
 

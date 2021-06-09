@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="1.0"
+	elementFormDefault="unqualified"
+	xmlns:ns="http://collectionspace.org/services/audit"
+	xmlns="http://collectionspace.org/services/audit"
+	targetNamespace="http://collectionspace.org/services/audit"
+	version="0.1">
+
+	<xs:include schemaLocation="audit-common.xsd" />
+
+	<xs:element name="audit_common_list"
+		type="audit_common_list" />
+	<xs:complexType name="audit_common_list">
+		<xs:sequence>
+			<xs:annotation>
+				<xs:documentation>audit common list</xs:documentation>
+			</xs:annotation>
+			<xs:element name="pageNum" type="xs:unsignedInt" />
+			<xs:element name="pageSize" type="xs:unsignedInt" />
+			<!-- "itemsInPage" is useful to our testing framework's unit tests -->
+			<xs:element name="itemsInPage" type="xs:unsignedInt" />
+			<xs:element name="totalItems" type="xs:unsignedInt" />
+			<xs:element name="auditcommon" type="ns:audit_common" minOccurs="1" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

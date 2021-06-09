@@ -36,7 +36,6 @@
         <dependency>
 		    <groupId>org.nuxeo.ecm.platform</groupId>
 			<artifactId>nuxeo-platform-audit-core</artifactId>
-			<version>${nuxeo.platform.version}</version>
 		</dependency>
     </dependencies>
 	
