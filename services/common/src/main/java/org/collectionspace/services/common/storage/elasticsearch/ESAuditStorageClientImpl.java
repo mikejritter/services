@@ -1,18 +1,24 @@
 package org.collectionspace.services.common.storage.elasticsearch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.Query;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.collectionspace.services.audit.AuditCommon;
+import org.collectionspace.services.client.AuditClientUtils;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.client.PoxPayloadOut;
+import org.collectionspace.services.common.api.Tools;
 import org.collectionspace.services.common.context.ServiceContext;
 import org.collectionspace.services.common.document.BadRequestException;
 import org.collectionspace.services.common.document.DocumentException;
+import org.collectionspace.services.common.document.DocumentFilter;
 import org.collectionspace.services.common.document.DocumentHandler;
 import org.collectionspace.services.common.document.DocumentNotFoundException;
 import org.collectionspace.services.common.document.DocumentWrapper;
@@ -20,6 +26,7 @@ import org.collectionspace.services.common.document.DocumentWrapperImpl;
 import org.collectionspace.services.common.document.TransactionException;
 import org.collectionspace.services.common.document.DocumentHandler.Action;
 import org.collectionspace.services.common.storage.StorageClient;
+import org.collectionspace.services.common.storage.jpa.JPATransactionContext;
 import org.collectionspace.services.common.vocabulary.RefNameServiceUtils.AuthorityItemSpecifier;
 import org.collectionspace.services.lifecycle.TransitionDef;
 import org.collectionspace.services.nuxeo.client.java.CoreSessionInterface;
@@ -27,15 +34,23 @@ import org.collectionspace.services.nuxeo.client.java.DocumentModelHandler;
 import org.collectionspace.services.nuxeo.client.java.NuxeoDocumentException;
 import org.collectionspace.services.nuxeo.client.java.NuxeoRepositoryClientImpl;
 import org.collectionspace.services.nuxeo.util.NuxeoUtils;
+
+import org.nuxeo.elasticsearch.audit.ESAuditBackend;
 import org.nuxeo.ecm.platform.audit.service.NXAuditEventsService;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.platform.audit.api.AuditLogger;
+import org.nuxeo.ecm.platform.audit.api.AuditQueryBuilder;
 import org.nuxeo.ecm.platform.audit.api.LogEntry;
+import org.nuxeo.ecm.platform.audit.api.Predicates;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.ecm.platform.audit.api.FilterMapEntry;
+import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_EVENT_ID;
+import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_ID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.nuxeo.elasticsearch.audit.ESAuditBackend;
 
 public class ESAuditStorageClientImpl implements StorageClient {
 
@@ -101,13 +116,6 @@ public class ESAuditStorageClientImpl implements StorageClient {
 	}
 
 	@Override
-	public void getFiltered(ServiceContext ctx, DocumentHandler handler)
-			throws DocumentNotFoundException, DocumentException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void update(ServiceContext ctx, String id, DocumentHandler handler)
 			throws BadRequestException, DocumentNotFoundException, DocumentException {
 		// TODO Auto-generated method stub
@@ -164,6 +172,56 @@ public class ESAuditStorageClientImpl implements StorageClient {
 		
 		return logEntry;
 	}
+	
+	private List<LogEntry> getLogEntries(DocumentFilter docFilter) throws DocumentException {
+		NXAuditEventsService audit = (NXAuditEventsService) Framework.getRuntime()
+				.getComponent(NXAuditEventsService.NAME);
+
+		ESAuditBackend esBackend = (ESAuditBackend) audit.getBackend();
+		List<LogEntry> logEntryList = null;
+		
+		try {
+			logEntryList = esBackend.queryLogs(new AuditQueryBuilder().
+					offset(docFilter.getOffset()).limit(docFilter.getPageSize()).defaultOrder());
+            long totalItems =  esBackend.getEventsCount(AuditClientUtils.CSPACE_EVENT_ID);
+            Set<String> auditableEvents = esBackend.getAuditableEventNames();
+			AuditLogger logger = Framework.getService(AuditLogger.class);
+			Set<String> moreAuditableEvents = logger.getAuditableEventNames();
+
+            docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
+
+		} catch (NuxeoException e) {
+			throw new DocumentNotFoundException(e);
+		}
+		
+		return logEntryList;
+	}
+
+	@Override
+	public void getFiltered(ServiceContext ctx, DocumentHandler handler)
+			throws DocumentNotFoundException, DocumentException {
+        
+        DocumentFilter docFilter = handler.getDocumentFilter();
+        if (docFilter == null) {
+            docFilter = handler.createDocumentFilter();
+        }
+
+        try {
+            handler.prepare(Action.GET_ALL);
+            List<LogEntry> list = this.getLogEntries(docFilter);
+            DocumentWrapper<List> wrapDoc = new DocumentWrapperImpl<List>(list);
+            handler.handle(Action.GET_ALL, wrapDoc);
+            handler.complete(Action.GET_ALL, wrapDoc);
+        } catch (DocumentException de) {
+            throw de;
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Caught exception ", e);
+            }
+            throw new DocumentException(e);
+        } finally {
+        }
+    }
 
 	@Override
 	public void get(ServiceContext ctx, String id, DocumentHandler handler)
@@ -174,7 +232,6 @@ public class ESAuditStorageClientImpl implements StorageClient {
                     "RepositoryJavaClient.get: handler is missing");
         }
 
-        CoreSessionInterface repoSession = null;
         try {
             handler.prepare(Action.GET);
             LogEntry logEntry = null;

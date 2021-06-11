@@ -23,11 +23,11 @@
  */
 package org.collectionspace.services.audit;
 
-import org.collectionspace.services.authorization.AccountRole;
-import org.collectionspace.services.authorization.Role;
+import org.collectionspace.services.account.AccountsCommon;
+import org.collectionspace.services.account.AccountsCommonList;
+import org.collectionspace.services.audit.nuxeo.AuditDocumentHandler;
 import org.collectionspace.services.client.AuditClient;
-import org.collectionspace.services.client.PoxPayloadIn;
-import org.collectionspace.services.client.PoxPayloadOut;
+import org.collectionspace.services.client.PayloadOutputPart;
 import org.collectionspace.services.common.AbstractCollectionSpaceResourceImpl;
 import org.collectionspace.services.common.CSWebApplicationException;
 import org.collectionspace.services.common.ResourceMap;
@@ -37,22 +37,23 @@ import org.collectionspace.services.common.context.RemoteServiceContext;
 import org.collectionspace.services.common.context.RemoteServiceContextFactory;
 import org.collectionspace.services.common.context.ServiceContext;
 import org.collectionspace.services.common.context.ServiceContextFactory;
-import org.collectionspace.services.common.document.DocumentException;
+import org.collectionspace.services.common.document.DocumentFilter;
 import org.collectionspace.services.common.document.DocumentHandler;
 import org.collectionspace.services.common.document.DocumentNotFoundException;
+import org.collectionspace.services.common.elasticsearch.ESDocumentFilter;
 import org.collectionspace.services.common.storage.StorageClient;
 import org.collectionspace.services.common.storage.elasticsearch.ESAuditStorageClientImpl;
-import org.collectionspace.services.common.storage.jpa.JpaRelationshipStorageClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.NoResultException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -97,7 +98,33 @@ public class AuditResource extends AbstractCollectionSpaceResourceImpl<AuditComm
 		// TODO Auto-generated method stub
 		return RemoteServiceContextFactory.get();
 	}
+	
+    public AuditCommonList getList(Request request, UriInfo uriInfo) {
+        try {
+            RemoteServiceContext<AuditCommon, AuditCommon> ctx = 
+            		(RemoteServiceContext<AuditCommon, AuditCommon>) createServiceContext(request, uriInfo);
+            AuditDocumentHandler handler = (AuditDocumentHandler) createDocumentHandler(ctx);
+            MultivaluedMap<String, String> queryParams = (uriInfo != null ? uriInfo.getQueryParameters() : null);
+            ESDocumentFilter myFilter = (ESDocumentFilter) handler.createDocumentFilter();
+            myFilter.setPagination(queryParams);
+            myFilter.setQueryParams(queryParams);
+            handler.setDocumentFilter(myFilter);
+            getStorageClient(ctx).getFiltered(ctx, handler);
 
+            return handler.getCommonPartList();
+        } catch (Exception e) {
+            throw bigReThrow(e, ServiceMessages.LIST_FAILED);
+        }
+    }
+
+
+    @GET
+    public AuditCommonList getAuditCommonList(@Context Request request, @Context UriInfo ui) {
+    	UriInfoWrapper uriInfoWrapper = new UriInfoWrapper(ui);
+    	AuditCommonList result = (AuditCommonList)getList(request, uriInfoWrapper);
+    	return result;
+    }
+    
 	@GET
 	@Path("{csid}")
 	public AuditCommon getAuditCommon(@Context Request request, @Context ResourceMap resourceMap,

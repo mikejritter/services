@@ -3,9 +3,10 @@ package org.collectionspace.services.listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.LifeCycleConstants;
+import org.nuxeo.ecm.core.api.event.CoreEventConstants;
 import org.nuxeo.ecm.core.api.event.DocumentEventTypes;
 import org.nuxeo.ecm.core.api.model.Property;
 import org.nuxeo.ecm.core.api.model.impl.ArrayProperty;
@@ -31,9 +32,45 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+
+/**
+ * As of June 2021, here is a list of ALL Nuxeo auditable events.  Those marked with an '*' are events that
+ * CollectionSpace's Audit Trail service logs.
+	- documentCreated*
+	- sectionContentPublished
+	- user_created
+	- documentCreatedByCopy
+	- documentSecurityUpdated
+	- documentDuplicated
+	- logout
+	- download
+	- search
+	- documentProxyPublished
+	- registrationValidated
+	- documentRemoved*
+	- documentMoved
+	- documentModified*
+	- documentUnlocked
+	- loginFailed
+	- documentCheckedIn
+	- retentionActiveChanged
+	- documentRestored
+	- registrationSubmitted
+	- lifecycle_transition_event* (CSpace workflow changes --e.g., lock, soft-delete, etc
+	- user_modified
+	- group_deleted
+	- group_modified
+	- loginSuccess
+	- group_created
+	- versionRemoved
+	- registrationAccepted
+	- documentLocked*
+	- user_deleted
+ */
 
 import org.collectionspace.authentication.AuthN;
+import org.collectionspace.services.client.AuditClientUtils;
+import org.collectionspace.services.client.CollectionSpaceClient;
 import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerImpl;
 
 	public class CSpaceAuditLogger extends AbstractCSEventSyncListenerImpl {
@@ -43,16 +80,17 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 	private static final List<String> SYSTEM_PROPS = Arrays.asList("dc:created", "dc:creator", "dc:modified",
 			"dc:contributors", "dc:title", "collectionspace_core:updatedAt");
 
-	public static final String EVENT_ID = "Property Modification";
 	public static final String FIELD_NAME = "fieldname";
 	public static final String OLD_VALUE = "oldValue";
 	public static final String NEW_VALUE = "newValue";
 	public static final String COMMENT_VALUE = "commentValue";
 	public static final String EMPTY_VALUE = "[EMPTY]";
 
+	private static final Serializable HARD_DELETED_STATE = "hard-deleted";
+
 	@Override
 	public void handleCSEvent(Event event) {
-		EventContext ectx = event.getContext();
+		EventContext ectx = event.getContext(); 
 		if (!(ectx instanceof DocumentEventContext)) {
 			return;
 		}
@@ -66,9 +104,11 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		try {
 			DocumentEventContext docCtx = (DocumentEventContext) ectx;
 			DocumentModel newDoc = docCtx.getSourceDocument();
-		
-			DocumentModel oldDoc = newDoc.getCoreSession().getDocument(newDoc.getRef());
-		
+			DocumentModel oldDoc = null;
+			if (!event.getName().equalsIgnoreCase(DocumentEventTypes.DOCUMENT_REMOVED)) {
+				oldDoc = newDoc.getCoreSession().getDocument(newDoc.getRef());
+			}
+
 			Context context = new Context(newDoc, oldDoc, event, logger);
 			processDocument(context);
 		} catch (Throwable t) {
@@ -101,13 +141,14 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 
 	protected void processDocument(Context context) {
 		List<FieldEntry> entries = new ArrayList<>();
+		String eventName = context.event.getName();
 	
-		if (context.event.getName().equalsIgnoreCase(DocumentEventTypes.DOCUMENT_CREATED)) {
+		if (eventName.equalsIgnoreCase(DocumentEventTypes.DOCUMENT_CREATED)) {
 			List<FieldEntry> subEntries = processNewDocument(context);
 			if (subEntries != null && !subEntries.isEmpty()) {
 				entries.addAll(subEntries);
 			}
-		} else {
+		} else if (eventName.equalsIgnoreCase(DocumentEventTypes.BEFORE_DOC_UPDATE))  {
 			String[] schemas = context.newDoc.getSchemas();
 			for (String schema : schemas) {
 				Collection<Property> properties = context.newDoc.getPropertyObjects(schema);
@@ -127,13 +168,47 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 					}
 				}
 			}
+		} else if (eventName.equalsIgnoreCase(LifeCycleConstants.TRANSITION_EVENT)) {
+			List<FieldEntry> subEntries = processLifecyleEvent(context);
+			if (subEntries != null && !subEntries.isEmpty()) {
+				entries.addAll(subEntries);
+			}			
+		} else if (eventName.equalsIgnoreCase(DocumentEventTypes.DOCUMENT_REMOVED)) {
+			List<FieldEntry> subEntries = processDeleteEvent(context);
+			if (subEntries != null && !subEntries.isEmpty()) {
+				entries.addAll(subEntries);
+			}			
 		}
 
 		if (entries.size() > 0) {
 			context.addFieldEntries(entries);
 		}
 	}
-	
+
+	private List<FieldEntry> processDeleteEvent(Context context) {
+		List<FieldEntry> entries = new ArrayList<>();
+		
+		FieldEntry entry = new FieldEntry(context);
+		String fieldName = CollectionSpaceClient.COLLECTIONSPACE_CORE_WORKFLOWSTATE;
+		entry.setOldValue(fieldName, context.getContextProperty(CoreEventConstants.DOC_LIFE_CYCLE));
+		entry.setNewValue(fieldName, HARD_DELETED_STATE);
+		entries.add(entry);
+
+		return entries;
+	}
+
+	private List<FieldEntry> processLifecyleEvent(Context context) {
+		List<FieldEntry> entries = new ArrayList<>();
+
+		FieldEntry entry = new FieldEntry(context);
+		String fieldName = CollectionSpaceClient.COLLECTIONSPACE_CORE_WORKFLOWSTATE;
+		entry.setOldValue(fieldName, context.getContextProperty(LifeCycleConstants.TRANSTION_EVENT_OPTION_FROM));
+		entry.setNewValue(fieldName, context.newDoc.getCurrentLifeCycleState());
+		entries.add(entry);
+
+		return entries;
+	}
+
 	private boolean isScalar(Property oldProperty, Property newProperty) {
 		boolean result = false;
 		
@@ -541,7 +616,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 	// Inner class for managing Nuxeo audit service context
 	//
 	class Context {
-		private UUID eventID;
+		private String eventID;
 		private DocumentModel newDoc;
 		private DocumentModel oldDoc;
 		private Event event;
@@ -553,12 +628,12 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			this.oldDoc = oldDoc;
 			this.event = event;
 			this.logger = logger;
-			this.eventID = UUID.randomUUID();
+			this.eventID = AuditClientUtils.CSPACE_EVENT_ID;
 			//
 			// Create and set the Nuxeo audit entry
 			//
 			entry = logger.newLogEntry();
-			entry.setEventId(eventID.toString()); // A UUID we (cspace) assign.
+			entry.setEventId(eventID); // use this value identify CollectionSpace events in the Nuxeo audit trail
 			entry.setCategory(event.getName());
 			entry.setEventDate(new Date(event.getTime()));
 			entry.setDocUUID(newDoc.getRef()); // Nuxeo repo ID
@@ -576,6 +651,10 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			//
 			Map<String, ExtendedInfo> extended = new HashMap<>();
 			entry.setExtendedInfos(extended);
+		}
+		
+		public String getContextProperty(String propertyName) {
+			return formatPropertyValue(event.getContext().getProperty(propertyName));
 		}
 
 		//

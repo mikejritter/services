@@ -4,13 +4,15 @@
 	<extension
 		target="org.nuxeo.ecm.core.event.EventServiceComponent"
 		point="listener">
+		<!-- To see all Nuxeo event types:  ./nuxeo-core/nuxeo-core-api/src/main/java/org/nuxeo/ecm/core/api/event/DocumentEventTypes.java -->
 		<listener name="cspaceauditlogger" async="true"
 			postCommit="true"
 			class="org.collectionspace.services.listener.CSpaceAuditLogger">
 			<event>documentCreated</event>
 			<event>beforeDocumentModification</event>
+			<event>documentLocked</event>
+			<event>documentRemoved</event>
 			<event>lifecycle_transition_event</event>
-			<event>aboutToRemove</event>
 		</listener>
 	</extension>
 

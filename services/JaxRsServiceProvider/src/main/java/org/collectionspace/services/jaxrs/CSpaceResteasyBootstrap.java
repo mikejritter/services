@@ -13,6 +13,7 @@ import org.collectionspace.services.account.Tenant;
 import org.collectionspace.services.account.TenantResource;
 import org.collectionspace.services.authorization.AuthZ;
 import org.collectionspace.services.client.AuditClient;
+import org.collectionspace.services.client.AuditClientUtils;
 import org.collectionspace.services.client.AuthorityClient;
 
 import org.collectionspace.services.common.CSWebApplicationException;
@@ -136,8 +137,8 @@ public class CSpaceResteasyBootstrap extends ResteasyBootstrap {
         EventServiceAdmin eventAdmin = Framework.getService(EventServiceAdmin.class);
         
         EventListenerList listenerList = eventAdmin.getListenerList();
-        EventListenerDescriptor descriptor = listenerList.getDescriptor("duplicatedNameFixer");
-        
+        EventListenerDescriptor descriptor = listenerList.getDescriptor(AuditClientUtils.SERVICE_LISTENER_NAME);
+
         return descriptor.isEnabled();
 	}
 
@@ -155,7 +156,7 @@ public class CSpaceResteasyBootstrap extends ResteasyBootstrap {
     	try {
     		// disable audit logs when initializing authorities
 	        eventAdmin = Framework.getService(EventServiceAdmin.class);
-	        eventAdmin.setListenerEnabledFlag(AuditClient.SERVICE_LISTENER_NAME, false);
+	        eventAdmin.setListenerEnabledFlag(AuditClientUtils.SERVICE_LISTENER_NAME, false);
 	
 	    	for (TenantBindingType tenantBindings : tenantBindingsTable.values()) {
 				CSpaceTenant tenant = new CSpaceTenant(tenantBindings.getId(), tenantBindings.getName());
@@ -185,7 +186,7 @@ public class CSpaceResteasyBootstrap extends ResteasyBootstrap {
 	    	}
     	} finally {
     		// set the enabled state of the audit logger back to what it was
-	        eventAdmin.setListenerEnabledFlag(AuditClient.SERVICE_LISTENER_NAME, cspaceAuditLoggerState);
+	        eventAdmin.setListenerEnabledFlag(AuditClientUtils.SERVICE_LISTENER_NAME, cspaceAuditLoggerState);
     	}
 	}
 

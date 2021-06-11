@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.collectionspace.services.audit.AuditCommon;
 import org.collectionspace.services.audit.AuditCommonList;
+import org.collectionspace.services.audit.AuditCommonList.AuditListItem;
 import org.collectionspace.services.audit.FieldChangedGroup;
 import org.collectionspace.services.audit.FieldChangedGroupList;
 import org.collectionspace.services.common.api.RefName.RefNameInterface;
@@ -43,6 +44,8 @@ import org.collectionspace.services.common.document.AbstractDocumentHandlerImpl;
 import org.collectionspace.services.common.document.DocumentException;
 import org.collectionspace.services.common.document.DocumentFilter;
 import org.collectionspace.services.common.document.DocumentWrapper;
+import org.collectionspace.services.common.elasticsearch.ESDocumentFilter;
+import org.collectionspace.services.jaxb.AbstractCommonList;
 import org.collectionspace.services.lifecycle.Lifecycle;
 import org.collectionspace.services.lifecycle.TransitionDef;
 
@@ -61,7 +64,7 @@ public class AuditDocumentHandler
 
     private final Logger logger = LoggerFactory.getLogger(AuditDocumentHandler.class);
     private AuditCommon auditCommon;
-    private List<AuditCommon> auditCommonList;
+    private AuditCommonList auditCommonList;
 
 	public enum FieldType {
 		QUALIFIED,
@@ -221,9 +224,22 @@ public class AuditDocumentHandler
 	@Override
 	public AuditCommonList extractPagingInfo(AuditCommonList theCommonList, DocumentWrapper<List<LogEntry>> wrapDoc)
 			throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        AbstractCommonList commonList = (AbstractCommonList) theCommonList;
+
+        DocumentFilter docFilter = this.getDocumentFilter();
+        long pageSize = docFilter.getPageSize();
+        long pageNum = pageSize != 0 ? docFilter.getOffset() / pageSize : pageSize;
+        // set the page size and page number
+        commonList.setPageNum(pageNum);
+        commonList.setPageSize(pageSize);
+        List docList = (List)wrapDoc.getWrappedObject();
+        // Set num of items in list. this is useful to our testing framework.
+        commonList.setItemsInPage(docList.size());
+        // set the total result size
+        commonList.setTotalItems(docFilter.getTotalItemsResult());
+
+        return (AuditCommonList) commonList;
+    }
 
 	@Override
 	public boolean supportsWorkflowStates() {
@@ -245,8 +261,8 @@ public class AuditDocumentHandler
 
 	@Override
 	public DocumentFilter createDocumentFilter() {
-		// TODO Auto-generated method stub
-		return null;
+        DocumentFilter filter = new ESDocumentFilter(this.getServiceContext());
+        return filter;
 	}
 
 	@Override
@@ -274,8 +290,9 @@ public class AuditDocumentHandler
 
 	@Override
 	public void handleGetAll(DocumentWrapper<List<LogEntry>> wrapDoc) throws Exception {
-		// TODO Auto-generated method stub
-		
+        AuditCommonList accList = extractCommonPartList(wrapDoc);
+        setCommonPartList(accList);
+        getServiceContext().setOutput(getCommonPartList());
 	}
 
 	//
@@ -320,6 +337,7 @@ public class AuditDocumentHandler
 		AuditCommon result = new AuditCommon();
 		LogEntry logEntry = wrapDoc.getWrappedObject();
 		
+		result.setIdNumber(Long.toString(logEntry.getId()));
 		result.setCsid(logEntry.getEventId());
 		result.setEventComment(logEntry.getComment());
 		result.setEventType(logEntry.getCategory());
@@ -363,9 +381,22 @@ public class AuditDocumentHandler
 
 	@Override
 	public AuditCommonList extractCommonPartList(DocumentWrapper<List<LogEntry>> wrapDoc) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
+		AuditCommonList accList = this.extractPagingInfo(new AuditCommonList(), wrapDoc);
+        List<AuditListItem> list = accList.getAuditListItem();
+
+        for (LogEntry logEntry : wrapDoc.getWrappedObject()) {
+        	AuditListItem accListItem = new AuditCommonList.AuditListItem();
+        	accListItem.setIdNumber(Long.toString(logEntry.getId()));
+            accListItem.setPrincipal(logEntry.getPrincipalName());
+            accListItem.setEventDate(logEntry.getEventDate().toInstant().toString());
+            accListItem.setResourceCSID(logEntry.getDocPath());
+            accListItem.setEventType(logEntry.getCategory());
+            accListItem.setResourceType(logEntry.getDocType());
+            list.add(accListItem);
+        }
+        return accList;
+    }
 
 	@Override
 	public AuditCommon getCommonPart() {
@@ -379,14 +410,12 @@ public class AuditDocumentHandler
 
 	@Override
 	public AuditCommonList getCommonPartList() {
-		// TODO Auto-generated method stub
-		return null;
+		return auditCommonList;
 	}
 
 	@Override
 	public void setCommonPartList(AuditCommonList obj) {
-		// TODO Auto-generated method stub
-		
+		auditCommonList = obj;
 	}
 
 	@Override
