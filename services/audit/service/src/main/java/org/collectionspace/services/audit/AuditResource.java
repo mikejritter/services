@@ -34,13 +34,14 @@ import org.collectionspace.services.common.ResourceMap;
 import org.collectionspace.services.common.ServiceMessages;
 import org.collectionspace.services.common.UriInfoWrapper;
 import org.collectionspace.services.common.context.RemoteServiceContext;
+import org.collectionspace.services.common.context.RemoteServiceContextFactory;
 import org.collectionspace.services.common.context.ServiceContext;
 import org.collectionspace.services.common.context.ServiceContextFactory;
 import org.collectionspace.services.common.document.DocumentException;
 import org.collectionspace.services.common.document.DocumentHandler;
 import org.collectionspace.services.common.document.DocumentNotFoundException;
 import org.collectionspace.services.common.storage.StorageClient;
-import org.collectionspace.services.common.storage.elasticsearch.ElasticsearchStorageClientImpl;
+import org.collectionspace.services.common.storage.elasticsearch.ESAuditStorageClientImpl;
 import org.collectionspace.services.common.storage.jpa.JpaRelationshipStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,7 @@ public class AuditResource extends AbstractCollectionSpaceResourceImpl<AuditComm
     public static final String READ = "get";
     public static final String UPDATE = "update";
     public static final String LIST = "list";
-    final StorageClient storageClient = new ElasticsearchStorageClientImpl();
+    final StorageClient storageClient = new ESAuditStorageClientImpl();
 
     @Override
     public StorageClient getStorageClient(ServiceContext<AuditCommon, AuditCommon> ctx) {
@@ -94,7 +95,7 @@ public class AuditResource extends AbstractCollectionSpaceResourceImpl<AuditComm
 	@Override
 	public ServiceContextFactory<AuditCommon, AuditCommon> getServiceContextFactory() {
 		// TODO Auto-generated method stub
-		return null;
+		return RemoteServiceContextFactory.get();
 	}
 
 	@GET
@@ -134,8 +135,7 @@ public class AuditResource extends AbstractCollectionSpaceResourceImpl<AuditComm
         return result;
     }
 
-    protected AuditCommon get(@PathParam("csid") String csid,
-            ServiceContext<AuditCommon, AuditCommon> ctx) throws Exception {
+    protected AuditCommon get(String csid, ServiceContext<AuditCommon, AuditCommon> ctx) throws Exception {
     	AuditCommon result = null;
 
         ensureCSID(csid, READ);

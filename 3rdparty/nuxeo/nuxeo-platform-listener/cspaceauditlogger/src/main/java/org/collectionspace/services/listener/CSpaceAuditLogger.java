@@ -558,11 +558,13 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			// Create and set the Nuxeo audit entry
 			//
 			entry = logger.newLogEntry();
-			entry.setEventId(eventID.toString());
+			entry.setEventId(eventID.toString()); // A UUID we (cspace) assign.
 			entry.setCategory(event.getName());
 			entry.setEventDate(new Date(event.getTime()));
-			entry.setDocUUID(newDoc.getRef());
-			entry.setDocLifeCycle(newDoc.getCurrentLifeCycleState());
+			entry.setDocUUID(newDoc.getRef()); // Nuxeo repo ID
+			entry.setDocType(newDoc.getType()); // Nuxeo document type
+			entry.setDocPath(newDoc.getName()); // CSpace CSID
+			entry.setDocLifeCycle(newDoc.getCurrentLifeCycleState()); // CSpace workflow state
 			entry.setRepositoryId(newDoc.getRepositoryName());
 			//
 			// Set the actor/user who's action triggered this audit entry
