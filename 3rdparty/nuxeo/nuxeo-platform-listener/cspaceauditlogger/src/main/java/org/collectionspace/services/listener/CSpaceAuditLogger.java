@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * As of June 2021, here is a list of ALL Nuxeo auditable events.  Those marked with an '*' are events that

@@ -21,8 +21,6 @@
 		<xs:sequence>
 			<!-- Common identifier -->
 			<xs:element name="csid" type="xs:string" />
-			<xs:element name="rev" type="xs:integer" /> <!-- Revision -->
-
 			<xs:element name="idNumber" type="xs:string" />
 			<xs:element name="resourceType" type="xs:string" />
 			<xs:element name="resourceCSID" type="xs:string" />

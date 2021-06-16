@@ -338,7 +338,7 @@ public class AuditDocumentHandler
 		LogEntry logEntry = wrapDoc.getWrappedObject();
 		
 		result.setIdNumber(Long.toString(logEntry.getId()));
-		result.setCsid(logEntry.getEventId());
+		result.setCsid(Long.toString(logEntry.getId()));
 		result.setEventComment(logEntry.getComment());
 		result.setEventType(logEntry.getCategory());
 		result.setResourceType(logEntry.getDocType());
@@ -388,6 +388,7 @@ public class AuditDocumentHandler
         for (LogEntry logEntry : wrapDoc.getWrappedObject()) {
         	AuditListItem accListItem = new AuditCommonList.AuditListItem();
         	accListItem.setIdNumber(Long.toString(logEntry.getId()));
+        	accListItem.setCsid(Long.toString(logEntry.getId()));
             accListItem.setPrincipal(logEntry.getPrincipalName());
             accListItem.setEventDate(logEntry.getEventDate().toInstant().toString());
             accListItem.setResourceCSID(logEntry.getDocPath());
