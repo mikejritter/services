@@ -339,7 +339,8 @@ public class AuditDocumentHandler
 		
 		result.setIdNumber(Long.toString(logEntry.getId()));
 		result.setCsid(Long.toString(logEntry.getId()));
-		result.setEventComment(logEntry.getComment());
+		result.setEventComment(logEntry.getComment()); // We may need to consolidate "Event Message" and "Save Comment"
+		result.setSaveMessage(logEntry.getComment());  // (see comment above)
 		result.setEventType(logEntry.getCategory());
 		result.setResourceType(logEntry.getDocType());
 		result.setResourceCSID(logEntry.getDocPath());

@@ -398,7 +398,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 				String fieldQualifier = getFieldQualifier(fieldQualifierValue++);
 				FieldEntry entry = getEntry(context, fieldName + fieldQualifier, null, (Serializable) addedValue);
 				if (entry != null) {
-					entry.setComment(fieldName + fieldQualifier, fieldName + " : Added " + formatPropertyValue((Serializable) addedValue));
+					entry.setComment(fieldName + fieldQualifier, "Added " + formatPropertyValue((Serializable) addedValue));
 					entries.add(entry);
 				}
 			}
@@ -412,7 +412,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 				String fieldQualifier = getFieldQualifier(fieldQualifierValue++);
 				FieldEntry entry = getEntry(context, fieldName + fieldQualifier, (Serializable) removedValue, null);
 				if (entry != null) {
-					entry.setComment(fieldName + fieldQualifier, fieldName + " : Removed " + formatPropertyValue((Serializable) removedValue));
+					entry.setComment(fieldName + fieldQualifier, "Removed " + formatPropertyValue((Serializable) removedValue));
 					entries.add(entry);
 				}
 			}
@@ -549,7 +549,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 		entry.setNewValue(fieldName, formatedNewValue);
 
 		if (comment == null) {
-			entry.setComment(fieldName, fieldName + " : " + (formatedOldValue != null ? formatedOldValue : EMPTY_VALUE) + " -> " +
+			entry.setComment(fieldName, (formatedOldValue != null ? formatedOldValue : EMPTY_VALUE) + " -> " +
 					(formatedNewValue != null ? formatedNewValue : EMPTY_VALUE));
 		} else {
 			entry.setComment(fieldName, comment);
@@ -642,6 +642,7 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			entry.setDocPath(newDoc.getName()); // CSpace CSID
 			entry.setDocLifeCycle(newDoc.getCurrentLifeCycleState()); // CSpace workflow state
 			entry.setRepositoryId(newDoc.getRepositoryName());
+			entry.setComment("No Comment");
 			//
 			// Set the actor/user who's action triggered this audit entry
 			//

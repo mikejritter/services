@@ -23,11 +23,8 @@
  */
 package org.collectionspace.services.audit;
 
-import org.collectionspace.services.account.AccountsCommon;
-import org.collectionspace.services.account.AccountsCommonList;
 import org.collectionspace.services.audit.nuxeo.AuditDocumentHandler;
 import org.collectionspace.services.client.AuditClient;
-import org.collectionspace.services.client.PayloadOutputPart;
 import org.collectionspace.services.common.AbstractCollectionSpaceResourceImpl;
 import org.collectionspace.services.common.CSWebApplicationException;
 import org.collectionspace.services.common.ResourceMap;
@@ -37,7 +34,6 @@ import org.collectionspace.services.common.context.RemoteServiceContext;
 import org.collectionspace.services.common.context.RemoteServiceContextFactory;
 import org.collectionspace.services.common.context.ServiceContext;
 import org.collectionspace.services.common.context.ServiceContextFactory;
-import org.collectionspace.services.common.document.DocumentFilter;
 import org.collectionspace.services.common.document.DocumentHandler;
 import org.collectionspace.services.common.document.DocumentNotFoundException;
 import org.collectionspace.services.common.elasticsearch.ESDocumentFilter;

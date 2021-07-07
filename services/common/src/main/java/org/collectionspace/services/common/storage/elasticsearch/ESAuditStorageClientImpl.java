@@ -45,6 +45,7 @@ import org.nuxeo.ecm.platform.audit.api.AuditQueryBuilder;
 import org.nuxeo.ecm.platform.audit.api.LogEntry;
 import org.nuxeo.ecm.platform.audit.api.Predicates;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.model.RegistrationInfo;
 import org.nuxeo.ecm.platform.audit.api.FilterMapEntry;
 import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_EVENT_ID;
 import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_ID;
@@ -173,10 +174,29 @@ public class ESAuditStorageClientImpl implements StorageClient {
 		return logEntry;
 	}
 	
+	private boolean isAuditServiceReady() {
+		boolean result = true;
+		
+		try {
+			RegistrationInfo regInfo = Framework.getRuntime().getComponentManager().getRegistrationInfo(NXAuditEventsService.NAME);
+			if (regInfo.getState() == RegistrationInfo.START_FAILURE) {
+				result = false;
+			}
+		} catch (Throwable t) {
+			result = false;
+		}
+		
+		return result;
+	}
+		
 	private List<LogEntry> getLogEntries(DocumentFilter docFilter) throws DocumentException {
+		if (!isAuditServiceReady()) {
+			throw new DocumentException("Nuxeo Audit service failed during startup.");
+		}
+
 		NXAuditEventsService audit = (NXAuditEventsService) Framework.getRuntime()
 				.getComponent(NXAuditEventsService.NAME);
-
+		
 		ESAuditBackend esBackend = (ESAuditBackend) audit.getBackend();
 		List<LogEntry> logEntryList = null;
 		
@@ -191,9 +211,9 @@ public class ESAuditStorageClientImpl implements StorageClient {
             docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
 
 		} catch (NuxeoException e) {
-			throw new DocumentNotFoundException(e);
+			throw new DocumentException(e);
 		}
-		
+
 		return logEntryList;
 	}
 
