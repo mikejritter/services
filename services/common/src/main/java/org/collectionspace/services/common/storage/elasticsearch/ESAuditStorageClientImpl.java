@@ -1,20 +1,11 @@
 package org.collectionspace.services.common.storage.elasticsearch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Query;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.collectionspace.services.audit.AuditCommon;
 import org.collectionspace.services.client.AuditClientUtils;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.client.PoxPayloadOut;
-import org.collectionspace.services.common.api.Tools;
 import org.collectionspace.services.common.context.ServiceContext;
 import org.collectionspace.services.common.document.BadRequestException;
 import org.collectionspace.services.common.document.DocumentException;
@@ -26,30 +17,17 @@ import org.collectionspace.services.common.document.DocumentWrapperImpl;
 import org.collectionspace.services.common.document.TransactionException;
 import org.collectionspace.services.common.document.DocumentHandler.Action;
 import org.collectionspace.services.common.storage.StorageClient;
-import org.collectionspace.services.common.storage.jpa.JPATransactionContext;
 import org.collectionspace.services.common.vocabulary.RefNameServiceUtils.AuthorityItemSpecifier;
 import org.collectionspace.services.lifecycle.TransitionDef;
-import org.collectionspace.services.nuxeo.client.java.CoreSessionInterface;
-import org.collectionspace.services.nuxeo.client.java.DocumentModelHandler;
 import org.collectionspace.services.nuxeo.client.java.NuxeoDocumentException;
-import org.collectionspace.services.nuxeo.client.java.NuxeoRepositoryClientImpl;
-import org.collectionspace.services.nuxeo.util.NuxeoUtils;
-
 import org.nuxeo.elasticsearch.audit.ESAuditBackend;
 import org.nuxeo.ecm.platform.audit.service.NXAuditEventsService;
-import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.audit.api.AuditLogger;
 import org.nuxeo.ecm.platform.audit.api.AuditQueryBuilder;
 import org.nuxeo.ecm.platform.audit.api.LogEntry;
-import org.nuxeo.ecm.platform.audit.api.Predicates;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.RegistrationInfo;
-import org.nuxeo.ecm.platform.audit.api.FilterMapEntry;
-import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_EVENT_ID;
-import static org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData.LOG_ID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,10 +182,6 @@ public class ESAuditStorageClientImpl implements StorageClient {
 			logEntryList = esBackend.queryLogs(new AuditQueryBuilder().
 					offset(docFilter.getOffset()).limit(docFilter.getPageSize()).defaultOrder());
             long totalItems =  esBackend.getEventsCount(AuditClientUtils.CSPACE_EVENT_ID);
-            Set<String> auditableEvents = esBackend.getAuditableEventNames();
-			AuditLogger logger = Framework.getService(AuditLogger.class);
-			Set<String> moreAuditableEvents = logger.getAuditableEventNames();
-
             docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
 
 		} catch (NuxeoException e) {
