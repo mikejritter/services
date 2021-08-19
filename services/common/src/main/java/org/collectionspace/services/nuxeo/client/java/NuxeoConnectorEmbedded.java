@@ -5,6 +5,21 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.JMException;
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.util.ServerInfo;
@@ -43,6 +58,7 @@ public class NuxeoConnectorEmbedded {
 	private volatile boolean initialized = false; // use volatile for lazy
 													// initialization in
 													// singleton
+	ClassLoader classLoader;
 	public NuxeoFrameworkBootstrap fb;
 	private ServletContext servletContext;
 	private RepositoryClientConfigType repositoryClientConfig;
@@ -138,14 +154,14 @@ public class NuxeoConnectorEmbedded {
 					+ nuxeoHomeDir.getCanonicalPath());
 		}
 
-		ClassLoader cl = NuxeoConnectorEmbedded.class.getClassLoader();
+		classLoader = NuxeoConnectorEmbedded.class.getClassLoader();
 
-		fb = new NuxeoFrameworkBootstrap(cl, nuxeoHomeDir);
+		fb = new NuxeoFrameworkBootstrap(classLoader, nuxeoHomeDir);
 		fb.setHostName("Tomcat");
 		fb.setHostVersion(ServerInfo.getServerNumber());
 
 		fb.initialize();
-		fb.start(new MutableClassLoaderDelegate(cl));
+		fb.start(new MutableClassLoaderDelegate(classLoader));
 
 		// Test to see if we can connect to the default repository
 		boolean transactionStarted = false;
@@ -179,6 +195,36 @@ public class NuxeoConnectorEmbedded {
 			}
 		}
 	}
+	
+	private void stopNuxeoEP() {
+		boolean success = true;
+		
+		try {
+			fb.stop(new MutableClassLoaderDelegate(classLoader));
+	        Enumeration<Driver> drivers = DriverManager.getDrivers();
+	        while (drivers.hasMoreElements()) {
+	            Driver driver = drivers.nextElement();
+	            try {
+	                DriverManager.deregisterDriver(driver);
+	                logger.info(String.format("Deregister JDBC driver: %s", driver));
+	            } catch (SQLException e) {
+	            	logger.error(String.format("Error deregistering JDBC driver %s", driver), e);
+	            }
+	        }
+
+		} catch (IllegalArgumentException e) {
+			success = false;
+		} catch (ReflectiveOperationException e) {
+			success = false;
+		} catch (JMException e) {
+			success = false;
+		}
+		
+		if (!success) {
+			logger.error("CollectionSpace was unable to shutdown Nuxeo cleanly.");
+		}
+	}
+
 
 	/**
 	 * release releases resources occupied by Nuxeo remoting client runtime
@@ -189,6 +235,7 @@ public class NuxeoConnectorEmbedded {
 		if (initialized == true) {
 			try {
 				client.tryDisconnect();
+				stopNuxeoEP();
 			} catch (Exception e) {
 				logger.error("Failed to disconnect Nuxeo connection.", e);
 				throw e;

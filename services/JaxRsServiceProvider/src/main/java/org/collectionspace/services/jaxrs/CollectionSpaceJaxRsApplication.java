@@ -142,7 +142,6 @@ public class CollectionSpaceJaxRsApplication extends Application
         addResourceToMapAndSingletons(new ConditioncheckResource());
         addResourceToMapAndSingletons(new ConservationResource());
         addResourceToMapAndSingletons(new UocResource());
-        addResourceToMapAndSingletons(new AuditResource());
         addResourceToMapAndSingletons(new ValuationcontrolResource());
         addResourceToMapAndSingletons(new ObjectExitResource());
         addResourceToMapAndSingletons(new BatchResource());
@@ -156,6 +155,7 @@ public class CollectionSpaceJaxRsApplication extends Application
         addResourceToMapAndSingletons(new PublicItemResource());
 
         singletons.add(new IDResource());
+        singletons.add(new AuditResource());
 
         /*
         singletons.add(new WorkflowResource());

@@ -74,6 +74,7 @@
 		<xs:attribute name="version" type="types:VersionType" use="required"/>
 		<xs:attribute name="createDisabled" type="xs:boolean" use="optional" default="false"/>
 		<xs:attribute name="forceUpdate" type="xs:boolean" use="optional" default="false"/>
+		<xs:attribute name="auditRequired" type="xs:boolean" use="optional" default="false"/>
 	</xs:complexType>
 
 	<xs:complexType name="RepositoryDomainType">

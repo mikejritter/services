@@ -98,6 +98,17 @@
 			<artifactId>org.collectionspace.services.authorization.service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.collectionspace.services</groupId>
+			<artifactId>org.collectionspace.services.audit.jaxb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.collectionspace.services</groupId>
+			<artifactId>org.collectionspace.services.client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 <!--
 		<dependency>
 			<groupId>org.collectionspace.services</groupId>
@@ -237,9 +248,19 @@
 			<version>${nuxeo.platform.version}</version>
 		</dependency>
 		<dependency>
+		      <groupId>org.nuxeo.ecm.platform</groupId>
+			  <artifactId>nuxeo-platform-audit-core</artifactId>
+			  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.nuxeo.elasticsearch</groupId>
+			<artifactId>nuxeo-elasticsearch-audit</artifactId>
+			<scope>provided</scope>
+			<version>${nuxeo.platform.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.nuxeo.ecm.platform</groupId>
 			<artifactId>nuxeo-platform-imaging-core</artifactId>
-			<version>${nuxeo.platform.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
