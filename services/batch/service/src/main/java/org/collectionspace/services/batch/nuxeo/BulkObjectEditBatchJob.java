@@ -162,6 +162,8 @@ public class BulkObjectEditBatchJob extends  AbstractBatchJob {
         natHistValues += "<taxonomicIdentGroupList><taxonomicIdentGroup>" + 
                             "<" + key + ">" + value + "</" + key + ">" + 
                             "</taxonomicIdentGroup></taxonomicIdentGroupList>";
+      } else if (key.equals("provenanceType")) {
+        natHistValues += "<" + key + ">" + value + "</" + key + ">";
       } else {
         commonValues += "<" + key + ">" + value + "</" + key + ">";
       }
