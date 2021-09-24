@@ -78,7 +78,7 @@
 		<!-- end runsqlscripts service meta-data -->
 
 		<!-- begin auditservice -->
-		<tenant:serviceBindings id="Audit" merge:matcher="id" name="Audit" type="procedure" version="1.1" elasticsearchIndexed="false">
+		<tenant:serviceBindings id="Audit" merge:matcher="id" name="Audit" type="procedure" version="1.1" elasticsearchIndexed="false" globalActionGroup="RL">
 	      <service:repositoryDomain xmlns:service="http://collectionspace.org/services/config/service">default-domain</service:repositoryDomain>
 	      <service:documentHandler xmlns:service="http://collectionspace.org/services/config/service">org.collectionspace.services.audit.nuxeo.AuditDocumentHandler</service:documentHandler>
 	      <service:validatorHandler xmlns:service="http://collectionspace.org/services/config/service">org.collectionspace.services.audit.nuxeo.AuditValidatorHandler</service:validatorHandler>
