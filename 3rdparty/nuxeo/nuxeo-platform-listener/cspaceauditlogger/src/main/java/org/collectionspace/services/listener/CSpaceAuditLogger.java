@@ -629,10 +629,11 @@ import org.collectionspace.services.nuxeo.listener.AbstractCSEventSyncListenerIm
 			this.oldDoc = oldDoc;
 			this.event = event;
 			this.logger = logger;
-			this.eventID = AuditClientUtils.CSPACE_EVENT_ID;
-			//
+
+			// generateCSID:
+			this.eventID = UUID.randomUUID().toString();
+
 			// Create and set the Nuxeo audit entry
-			//
 			entry = logger.newLogEntry();
 			entry.setEventId(eventID); // use this value identify CollectionSpace events in the Nuxeo audit trail
 			entry.setCategory(event.getName());

@@ -1,6 +1,7 @@
 package org.collectionspace.services.common.storage.elasticsearch;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -25,6 +26,7 @@ import org.collectionspace.services.common.storage.StorageClient;
 import org.collectionspace.services.common.vocabulary.RefNameServiceUtils.AuthorityItemSpecifier;
 import org.collectionspace.services.lifecycle.TransitionDef;
 import org.collectionspace.services.nuxeo.client.java.NuxeoDocumentException;
+import org.elasticsearch.cluster.routing.allocation.decider.Decision.Multi;
 import org.nuxeo.elasticsearch.audit.ESAuditBackend;
 import org.nuxeo.ecm.platform.audit.service.NXAuditEventsService;
 import org.nuxeo.ecm.core.api.NuxeoException;
@@ -144,15 +146,26 @@ public class ESAuditStorageClientImpl implements StorageClient {
 
 	}
 
-	private LogEntry getLogEntry(String id) throws DocumentNotFoundException {
+	private LogEntry getLogEntry(String id, DocumentHandler handler) throws DocumentNotFoundException {
 		NXAuditEventsService audit = (NXAuditEventsService) Framework.getRuntime()
 				.getComponent(NXAuditEventsService.NAME);
 
 		ESAuditBackend esBackend = (ESAuditBackend) audit.getBackend();
 		LogEntry logEntry = null;
 		
-		try {
-			logEntry = esBackend.getLogEntryByID(Long.parseLong(id));
+		try {			
+			DocumentFilter docFilter = handler.getDocumentFilter();
+			if (docFilter == null) {
+					docFilter = handler.createDocumentFilter();
+			}
+			Predicate filter = Predicates.eq(ESAuditConstants.ES_EVENT_ID, id);
+
+			AuditQueryBuilder builder = new AuditQueryBuilder().offset(docFilter.getOffset()).limit(docFilter.getPageSize());
+			logEntry = esBackend.queryLogs(builder.predicates(filter).defaultOrder()).get(0);
+
+			// TO DO: Get accurate total #s
+      long totalItems =  esBackend.getEventsCount(AuditClientUtils.CSPACE_EVENT_ID);
+      docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
 		} catch (NuxeoException e) {
 			throw new DocumentNotFoundException(e);
 		}
@@ -257,7 +270,8 @@ public class ESAuditStorageClientImpl implements StorageClient {
             handler.prepare(Action.GET);
             LogEntry logEntry = null;
             try {
-                logEntry = getLogEntry(id);
+					
+                logEntry = getLogEntry(id, handler);
             } catch (org.nuxeo.ecm.core.api.DocumentNotFoundException ce) {
                 String msg = logException(ce,
                 		String.format("Could not find %s resource/record with ID=%s", ctx.getDocumentType(), id));
