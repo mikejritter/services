@@ -153,7 +153,8 @@ public class AuditResource extends AbstractCollectionSpaceResourceImpl<AuditComm
         ensureCSID(csid, READ);
         RemoteServiceContext<AuditCommon, AuditCommon> ctx = 
         		(RemoteServiceContext<AuditCommon, AuditCommon>) createServiceContext(request, uriInfo);
-        result = get(csid, ctx);// ==> CALL an implementation method, which subclasses may override.
+        
+        result = get(csid, ctx); // ==> CALL an implementation method, which subclasses may override.
 
         return result;
     }

@@ -337,8 +337,8 @@ public class AuditDocumentHandler
 		AuditCommon result = new AuditCommon();
 		LogEntry logEntry = wrapDoc.getWrappedObject();
 		
-		result.setIdNumber(Long.toString(logEntry.getId()));
-		result.setCsid(Long.toString(logEntry.getId()));
+		result.setIdNumber(Long.toString(logEntry.getId())); // set ES csid
+		result.setCsid(logEntry.getEventId()); // set cspace csid
 		result.setEventComment(logEntry.getComment()); // We may need to consolidate "Event Message" and "Save Comment"
 		result.setSaveMessage(logEntry.getComment());  // (see comment above)
 		result.setEventType(logEntry.getCategory());
@@ -388,14 +388,14 @@ public class AuditDocumentHandler
 
         for (LogEntry logEntry : wrapDoc.getWrappedObject()) {
         	AuditListItem accListItem = new AuditCommonList.AuditListItem();
-        	accListItem.setIdNumber(Long.toString(logEntry.getId()));
-        	accListItem.setCsid(Long.toString(logEntry.getId()));
-            accListItem.setPrincipal(logEntry.getPrincipalName());
-            accListItem.setEventDate(logEntry.getEventDate().toInstant().toString());
-            accListItem.setResourceCSID(logEntry.getDocPath());
-            accListItem.setEventType(logEntry.getCategory());
-            accListItem.setResourceType(logEntry.getDocType());
-            list.add(accListItem);
+					accListItem.setCsid(logEntry.getEventId());
+					accListItem.setIdNumber(Long.toString(logEntry.getId()));
+					accListItem.setPrincipal(logEntry.getPrincipalName());
+					accListItem.setEventDate(logEntry.getEventDate().toInstant().toString());
+					accListItem.setResourceCSID(logEntry.getDocPath());
+					accListItem.setEventType(logEntry.getCategory());
+					accListItem.setResourceType(logEntry.getDocType());
+					list.add(accListItem);
         }
         return accList;
     }
