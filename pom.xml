@@ -396,7 +396,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>1.7.21</version>
+				<version>1.7.32</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -436,18 +436,22 @@
 					</exclusion>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j17</artifactId>
+						<artifactId>slf4j-log4j12</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>xml-apis</groupId>
 						<artifactId>xml-apis</artifactId>
 					</exclusion>
+					<exclusion>
+						<groupId>xalan</groupId>
+						<artifactId>xalan</artifactId>
+					</exclusion>					
 				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.1</version>
+				<version>4.13.1</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -528,7 +532,7 @@
 					</exclusion>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j17</artifactId>
+						<artifactId>slf4j-log4j12</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -539,7 +543,7 @@
 				<exclusions>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j17</artifactId>
+						<artifactId>slf4j-log4j12</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>xerces</groupId>
@@ -567,6 +571,12 @@
 		    	<groupId>org.nuxeo.ecm.platform</groupId>
 				<artifactId>nuxeo-platform-audit-core</artifactId>
 				<version>${nuxeo.platform.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 		    	<groupId>org.nuxeo.ecm.platform</groupId>
@@ -620,7 +630,7 @@
 				<exclusions>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j17</artifactId>
+						<artifactId>slf4j-log4j12</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -664,7 +674,7 @@
 					</exclusion>
 					<exclusion>
 						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j17</artifactId>
+						<artifactId>slf4j-log4j12</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
