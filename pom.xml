@@ -603,6 +603,32 @@
 				<version>${nuxeo.core.version}</version>
 			</dependency>
 			<dependency>
+		    	<groupId>org.nuxeo.ecm.platform</groupId>
+				<artifactId>nuxeo-platform-audit-core</artifactId>
+				<version>${nuxeo.platform.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+		    	<groupId>org.nuxeo.ecm.platform</groupId>
+				<artifactId>nuxeo-platform-audit-io</artifactId>
+				<version>${nuxeo.platform.version}</version>
+			</dependency>
+			<dependency>
+		    	<groupId>org.nuxeo.ecm.platform</groupId>
+				<artifactId>nuxeo-platform-audit-ws</artifactId>
+				<version>${nuxeo.platform.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nuxeo.elasticsearch</groupId>
+				<artifactId>nuxeo-elasticsearch-http-read-only</artifactId>
+				<version>${nuxeo.platform.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.nuxeo.ecm.platform</groupId>
 				<artifactId>nuxeo-platform-imaging-core</artifactId>
 				<version>${nuxeo.platform.version}</version>
@@ -730,6 +756,7 @@
 				<artifactId>nuxeo-runtime-datasource</artifactId>
 				<version>${nuxeo.core.version}</version>
 			</dependency>
+
 			<!-- End of Nuxeo dependencies -->
 
 			<!-- Tomcat -->
