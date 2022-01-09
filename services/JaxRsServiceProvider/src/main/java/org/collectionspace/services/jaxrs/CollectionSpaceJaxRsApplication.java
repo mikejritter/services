@@ -38,6 +38,7 @@ import org.collectionspace.services.loanin.LoaninResource;
 import org.collectionspace.services.loanout.LoanoutResource;
 import org.collectionspace.services.transport.TransportResource;
 import org.collectionspace.services.uoc.UocResource;
+import org.collectionspace.services.audit.AuditResource;
 import org.collectionspace.services.valuationcontrol.ValuationcontrolResource;
 import org.collectionspace.services.objectexit.ObjectExitResource;
 import org.collectionspace.services.batch.BatchResource;
@@ -162,6 +163,7 @@ public class CollectionSpaceJaxRsApplication extends Application
         addResourceToMapAndSingletons(new ChronologyAuthorityResource());
 
         singletons.add(new IDResource());
+        singletons.add(new AuditResource());
 
         /*
         singletons.add(new WorkflowResource());
