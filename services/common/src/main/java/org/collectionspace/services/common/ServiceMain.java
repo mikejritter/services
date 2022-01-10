@@ -60,6 +60,9 @@ import org.collectionspace.services.nuxeo.listener.CSEventListener;
 import org.collectionspace.services.nuxeo.listener.AbstractCSEventListenerImpl;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.nuxeo.ecm.platform.audit.service.NXAuditEventsService;
+import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.model.RegistrationInfo;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.tree.DefaultElement;
@@ -111,6 +114,8 @@ public class ServiceMain {
     private static final String DROP_USER_IF_EXISTS_SQL_CMD = DROP_USER_SQL_CMD + " IF EXISTS %s;";
     private static final String DROP_OBJECTS_SQL_COMMENT = "-- drop all the objects before dropping roles";
 	private static final String CSPACE_JEESERVER_HOME = "CSPACE_JEESERVER_HOME";
+	private static final String CSPACE_UTILS_SCHEMANAME = "utils";
+	private static final String RUNSQLSCRIPTS_SERVICE_NAME = "runsqlscripts";
 
     private ServiceMain() {
     	// Intentionally blank
@@ -158,6 +163,7 @@ public class ServiceMain {
                     	//celebrate success
                         initFailed = false;
                     } catch (Exception e) {
+                    	newInstance.release(); // attempt to release resources acquired during initialization attempt 
                         instance = null;
                         if (e instanceof RuntimeException) {
                             throw (RuntimeException) e;
@@ -175,6 +181,36 @@ public class ServiceMain {
         }
 
         return instance;
+    }
+    
+	private boolean isAuditServiceReady() {
+		boolean result = true;
+		
+		try {
+			RegistrationInfo regInfo = Framework.getRuntime().getComponentManager().getRegistrationInfo(NXAuditEventsService.NAME);
+			if (regInfo.getState() == RegistrationInfo.START_FAILURE) {
+				result = false;
+			}
+		} catch (Throwable t) {
+			result = false;
+		}
+		
+		return result;
+	}
+    
+	/**
+	 * Use this method to check for services/features required by each tenant.
+	 * @throws ConfigurationException
+	 */
+    private void ensureRequiredNuxeoServices() throws ConfigurationException {
+        Hashtable<String, TenantBindingType> tenantBindings = tenantBindingConfigReader.getTenantBindings();
+        for (String tenantId : tenantBindings.keySet()) {
+	        TenantBindingType tenantBinding = tenantBindings.get(tenantId);
+	        if (tenantBinding.isAuditRequired() == true && isAuditServiceReady() == false) {
+	        	throw new ConfigurationException(String.format("Tenant %s:%s is configured to require auditing but the audit service could not start.  Verify the Nuxeo Audit Service is configured correctly.",
+	        			tenantBinding.getDisplayName(), tenantId));
+	        }
+        }
     }
 
     private void initialize() throws Exception {
@@ -226,7 +262,12 @@ public class ServiceMain {
         }
 
         //
+        // Ensure any/all tenant requirements are met --e.g., the Nuxeo Audit service is configured correctly and running
         //
+        ensureRequiredNuxeoServices();
+        
+        //
+        // Initialize the Nuxeo event listeners using the tenant-specific service bindings
         //
         initializeEventListeners();
 
