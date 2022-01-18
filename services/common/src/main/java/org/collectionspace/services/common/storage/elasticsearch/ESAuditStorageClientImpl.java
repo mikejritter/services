@@ -1,14 +1,13 @@
 package org.collectionspace.services.common.storage.elasticsearch;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
 import java.util.ArrayList;
 
-import org.apache.commons.collections4.MultiValuedMap;
 import org.collectionspace.services.client.AuditClientUtils;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.client.PoxPayloadOut;
@@ -26,12 +25,15 @@ import org.collectionspace.services.common.storage.StorageClient;
 import org.collectionspace.services.common.vocabulary.RefNameServiceUtils.AuthorityItemSpecifier;
 import org.collectionspace.services.lifecycle.TransitionDef;
 import org.collectionspace.services.nuxeo.client.java.NuxeoDocumentException;
-import org.elasticsearch.cluster.routing.allocation.decider.Decision.Multi;
+import org.nuxeo.ecm.core.api.SortInfo;
+import org.nuxeo.ecm.platform.audit.api.BuiltinLogEntryData;
+import org.nuxeo.ecm.platform.query.api.PageProvider;
+import org.nuxeo.ecm.platform.query.api.PageProviderService;
+import org.nuxeo.ecm.platform.query.api.WhereClauseDefinition;
 import org.nuxeo.elasticsearch.audit.ESAuditBackend;
 import org.nuxeo.ecm.platform.audit.service.NXAuditEventsService;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.query.sql.model.Predicate;
-import org.nuxeo.ecm.platform.audit.api.AuditLogger;
 import org.nuxeo.ecm.platform.audit.api.AuditQueryBuilder;
 import org.nuxeo.ecm.platform.audit.api.LogEntry;
 import org.nuxeo.ecm.platform.audit.api.Predicates;
@@ -39,7 +41,6 @@ import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.RegistrationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.collectionspace.services.common.storage.elasticsearch.ESAuditConstants;
 
 public class ESAuditStorageClientImpl implements StorageClient {
 
@@ -193,20 +194,32 @@ public class ESAuditStorageClientImpl implements StorageClient {
 			throw new DocumentException("Nuxeo Audit service failed during startup.");
 		}
 
-		NXAuditEventsService audit = (NXAuditEventsService) Framework.getRuntime()
-				.getComponent(NXAuditEventsService.NAME);
-		
-		ESAuditBackend esBackend = (ESAuditBackend) audit.getBackend();
 		List<LogEntry> logEntryList = null;
+
+		final String docPathQuery =
+			"{" +
+			  "\"bool\" : {" +
+			    "\"must\" : {" +
+			      "\"match\" : {" +
+			        "\"docPath\" : {" +
+			          "\"query\" : \"?\"" +
+			        "}" +
+			      "}" +
+			    "}" +
+			  "}" +
+			"}";
 		
 		try {
 
 			MultivaluedMap<String, String> params = docFilter.getQueryParams();
+			// todo: figure out what to do with this
 			List<Predicate> filters = new ArrayList<Predicate>();
 
+			String docPath = null;
 			for (String param : params.keySet()) {
 				String value = params.getFirst(param);
 				if (param.equals(ESAuditConstants.NUXEO_RECORD_CSID)){
+					docPath = value;
 					filters.add(Predicates.eq(ESAuditConstants.ES_RECORD_CSID, value));
 				} else if (param.equals(ESAuditConstants.NUXEO_CRATED_BY)) {
 					filters.add(Predicates.eq(ESAuditConstants.ES_CREATED_BY, value)); // change this to contains?
@@ -217,13 +230,25 @@ public class ESAuditStorageClientImpl implements StorageClient {
 					// TO DO: Fine-tune this more so that we can pass in YYYY-MM-DD format
 				}
 			}
-			AuditQueryBuilder builder = new AuditQueryBuilder().offset(docFilter.getOffset()).limit(docFilter.getPageSize());
-			logEntryList = esBackend.queryLogs(builder.predicates(filters).defaultOrder());
 
-			// TO DO: Figure out out how do get the actual total items
-      long totalItems =  esBackend.getEventsCount(AuditClientUtils.CSPACE_EVENT_ID);
-      docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
+			PageProviderService pps = Framework.getService(PageProviderService.class);
+			PageProvider<LogEntry> pp =
+				(PageProvider<LogEntry>) pps.getPageProvider("DOCUMENT_HISTORY_PROVIDER_OLD", null, null, null,
+															 new HashMap<String, Serializable>(), docPath);
+			pp.setSortInfo(new SortInfo(BuiltinLogEntryData.LOG_EVENT_DATE, false));
+			pp.setCurrentPageIndex(docFilter.getStartPage());
+			pp.setPageSize(docFilter.getPageSize());
 
+			// override the where clause to search on docPath
+			WhereClauseDefinition whereClause = pp.getDefinition().getWhereClause();
+			if (whereClause != null) {
+				whereClause.setFixedPart(docPathQuery);
+			}
+
+			logEntryList = pp.getCurrentPage();
+
+			long totalItems = pp.getResultsCount();
+			docFilter.setTotalItemsResult(totalItems); // Save the items total in the doc filter for later reporting
 		} catch (NuxeoException e) {
 			throw new DocumentException(e);
 		}
