@@ -183,7 +183,7 @@ public class ServiceMain {
         return instance;
     }
     
-	static boolean isAuditServiceReady() {
+	static public boolean isAuditServiceReady() {
 		boolean result = true;
 		
 		try {
