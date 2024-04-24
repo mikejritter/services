@@ -136,7 +136,10 @@ public class RefNameUtils {
         			|| resource.equals("personauthorities")
         			|| resource.equals("locationauthorities")
         			|| resource.equals("placeauthorities")
-        			|| resource.equals("vocabularies"))) {	
+					|| resource.equals("chronologyauthorities")
+					|| resource.equals("citationauthorities")
+					|| resource.equals("conceptauthorities")
+        			|| resource.equals("vocabularies"))) {
         			logger.warn("Unrecognized Authority Type: " + resource);
         		}
         		uri.append("/"+resource+"/");
