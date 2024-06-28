@@ -29,7 +29,7 @@ public class Claim2ValidatorHandler extends ValidatorHandlerImpl<PoxPayloadIn, P
 
     private static final String COMMON_PART_MISSING = "Validation exception: claims2_common part is missing";
     private static final String CLAIM_NUMBER_MISSING =
-            "Validation exception: The nagpra claim field \"claimNumber\" cannot be empty or missing";
+            "Validation exception: The claim field \"claimNumber\" cannot be empty or missing";
 
     private final Logger logger = LoggerFactory.getLogger(Claim2ValidatorHandler.class);
 
