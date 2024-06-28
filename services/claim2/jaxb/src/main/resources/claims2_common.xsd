@@ -11,7 +11,8 @@
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-  jaxb:version="1.0" elementFormDefault="unqualified"
+  jaxb:version="2.0"
+  xmlns:nagpra="http://collectionspace.org/services/nagpra"
   xmlns:ns="http://collectionspace.org/services/claim2"
   xmlns="http://collectionspace.org/services/claim2"
   targetNamespace="http://collectionspace.org/services/claim2"
@@ -54,38 +55,6 @@
   <xs:complexType name="notes">
     <xs:sequence>
       <xs:element name="note" type="xs:string" minOccurs="0" maxOccurs="unbounded"  />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="statusGroupList">
-    <xs:sequence>
-      <xs:element name="statusGroup" type="statusGroup" minOccurs="0" maxOccurs="unbounded"  />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="statusGroup">
-    <xs:sequence>
-      <xs:element name="statusApprovalGroup" type="xs:string" />
-      <xs:element name="statusIndividual" type="xs:string" />
-      <xs:element name="status" type="xs:string" />
-      <xs:element name="statusDate" type="xs:date" />
-      <xs:element name="statusNote" type="xs:string" />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="documentationGroupList">
-    <xs:sequence>
-      <xs:element name="documentationGroup" type="documentationGroup" minOccurs="0" maxOccurs="unbounded"  />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="documentationGroup">
-    <xs:sequence>
-      <xs:element name="documentationApprovalGroup" type="xs:string" />
-      <xs:element name="documentationIndividual" type="xs:string" />
-      <xs:element name="documentationStatus" type="xs:string" />
-      <xs:element name="documentationDate" type="xs:date" />
-      <xs:element name="documentationNote" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
 
