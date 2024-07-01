@@ -24,22 +24,19 @@ package org.collectionspace.services.claim2;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+
 import org.collectionspace.services.client.Claim2Client;
+import org.collectionspace.services.client.ClaimClient;
 import org.collectionspace.services.common.NuxeoBasedResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@Path(Claim2Client.SERVICE_PATH)
-@Consumes("application/xml")
-@Produces("application/xml")
+@Path(ClaimClient.SERVICE_PATH)
+@Consumes("application/collectionspace.claim.v2+xml")
+@Produces("application/collectionspace.claim.v2+xml")
 public class Claim2Resource extends NuxeoBasedResource {
-
-    final Logger logger = LoggerFactory.getLogger(Claim2Resource.class);
 
     @Override
     protected String getVersionString() {
-        final String lastChangeRevision = "$LastChangedRevision$";
-        return lastChangeRevision;
+        return "$LastChangedRevision$";
     }
 
     @Override
