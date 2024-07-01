@@ -60,16 +60,24 @@ public class RequestUtils {
         if (StringUtils.isBlank(accept)) {
             return false;
         }
-        
-        List<MediaType> mediaTypes = MediaTypeHelper.parseHeader(accept);
-        
-        if (mediaTypes.size() == 0) {
-            return false;
-        }
-        
-        MediaTypeHelper.sortByWeight(mediaTypes);
 
-        return MediaTypeHelper.equivalent(mediaTypes.get(0), MediaType.APPLICATION_JSON_TYPE);
+        List<MediaType> mediaTypes = MediaTypeHelper.parseHeader(accept);
+
+        boolean equivalent = false;
+        MediaTypeHelper.sortByWeight(mediaTypes);
+        for (MediaType mediaType : mediaTypes) {
+            if (mediaType.getSubtype().contains("+")) {
+                String[] types = mediaType.getSubtype().split("\\+");
+                for (String subtype : types) {
+                    MediaType type = new MediaType(mediaType.getType(), subtype);
+                    equivalent = equivalent || MediaTypeHelper.equivalent(type, MediaType.APPLICATION_JSON_TYPE);
+                }
+            } else {
+                equivalent = equivalent || MediaTypeHelper.equivalent(mediaType, MediaType.APPLICATION_JSON_TYPE);
+            }
+        }
+
+        return equivalent;
     }
     
     /**
