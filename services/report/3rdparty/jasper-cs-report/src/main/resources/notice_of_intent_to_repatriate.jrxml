@@ -16,7 +16,7 @@
 		<defaultValueExpression><![CDATA["summary_type,status,culture,involved_party,tribeornation,places,sites,collectors,acquisition_sources,category_determinations,locations,acquisition_sources"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="csidlist" class="java.lang.String" isForPrompting="false"/>
-  <parameter name="csid" class="java.lang.String" isForPrompting="false" />
+	<parameter name="csid" class="java.lang.String" isForPrompting="false" />
 	<parameter name="csids" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{csidlist} != null ? ("'" + $P{csidlist}.replace(/,/g, "','") + "'") : "NOVALUE"]]></defaultValueExpression>
 	</parameter>
@@ -30,201 +30,201 @@
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[WITH related_objects AS (
-  SELECT
-    hierarchy.id as object_id,
-    relation.objectcsid,
-    relation.subjectcsid as summarycsid
-  FROM relations_common relation
+	SELECT
+		hierarchy.id as object_id,
+		relation.objectcsid,
+		relation.subjectcsid as summarycsid
+	FROM relations_common relation
 	INNER JOIN misc ON misc.id = relation.id and misc.lifecyclestate != 'deleted'
-  INNER JOIN hierarchy on hierarchy.name = relation.objectcsid
-  WHERE relation.objectdocumenttype = 'CollectionObject' AND relation.subjectdocumenttype = 'SummaryDocumentation' $P!{whereclause_cte}
+	INNER JOIN hierarchy on hierarchy.name = relation.objectcsid
+	WHERE relation.objectdocumenttype = 'CollectionObject' AND relation.subjectdocumenttype = 'SummaryDocumentation' $P!{whereclause_cte}
 ), related_acquisitions AS (
-  SELECT DISTINCT ON (objs.summarycsid, hierarchy.id) objs.objectcsid,
-    objs.summarycsid,
-    hierarchy.id as acquisition_id,
-    relation.subjectcsid as acquisitioncsid
-  FROM related_objects objs
-  INNER JOIN relations_common relation ON relation.objectcsid = objs.objectcsid AND relation.subjectdocumenttype = 'Acquisition'
+	SELECT DISTINCT ON (objs.summarycsid, hierarchy.id) objs.objectcsid,
+		objs.summarycsid,
+		hierarchy.id as acquisition_id,
+		relation.subjectcsid as acquisitioncsid
+	FROM related_objects objs
+	INNER JOIN relations_common relation ON relation.objectcsid = objs.objectcsid AND relation.subjectdocumenttype = 'Acquisition'
 	INNER JOIN misc ON misc.id = relation.id and misc.lifecyclestate != 'deleted'
-  INNER JOIN hierarchy on hierarchy.name = relation.subjectcsid
+	INNER JOIN hierarchy on hierarchy.name = relation.subjectcsid
 )
 SELECT
-  summary.documentationnumber,
-  summary_type.item as summary_type,
-  treatment.item as treatment_note,
-  consultation.item as consultation_note,
-  coalesce(affiliation.tribeornation, '{}') AS tribeornation,
-  affiliation.basisofdetermination,
-  coalesce(culturalgroup.culture, '{}') AS culture,
-  partiesinvolved.involvedparty as involved_party,
-  partiesinvolved.title as involved_party_title,
-  partiesinvolved.email as involved_party_email,
-  statusgroup.status,
-  coalesce(field_collection_places.places, '{}') AS places,
-  coalesce(field_collection_sites.sites, '{}') AS sites,
-  coalesce(field_collectors.collectors, '{}') AS collectors,
-  coalesce(field_collection_dates.dates, '{}') AS dates,
-  coalesce(nagpra_category_determinations.category_determinations, '{}') AS category_determinations,
-  coalesce(object_data.locations, '{}') AS locations,
-  object_count.object_count,
-  coalesce(object_name.object_names, '{}') AS object_names,
-  coalesce(acquisition_data.acquisition_numbers, '{}') AS acquisition_numbers,
-  coalesce(acquisition_data.acquisition_methods, '{}') AS acquisition_methods,
-  coalesce(acquisition_sources.acquisition_sources, '{}') AS acquisition_sources,
-  coalesce(accession_dates.accession_dates, '{}') AS accession_dates
+	summary.documentationnumber,
+	summary_type.item as summary_type,
+	treatment.item as treatment_note,
+	consultation.item as consultation_note,
+	coalesce(affiliation.tribeornation, '{}') AS tribeornation,
+	affiliation.basisofdetermination,
+	coalesce(culturalgroup.culture, '{}') AS culture,
+	partiesinvolved.involvedparty as involved_party,
+	partiesinvolved.title as involved_party_title,
+	partiesinvolved.email as involved_party_email,
+	statusgroup.status,
+	coalesce(field_collection_places.places, '{}') AS places,
+	coalesce(field_collection_sites.sites, '{}') AS sites,
+	coalesce(field_collectors.collectors, '{}') AS collectors,
+	coalesce(field_collection_dates.dates, '{}') AS dates,
+	coalesce(nagpra_category_determinations.category_determinations, '{}') AS category_determinations,
+	coalesce(object_data.locations, '{}') AS locations,
+	object_count.object_count,
+	coalesce(object_name.object_names, '{}') AS object_names,
+	coalesce(acquisition_data.acquisition_numbers, '{}') AS acquisition_numbers,
+	coalesce(acquisition_data.acquisition_methods, '{}') AS acquisition_methods,
+	coalesce(acquisition_sources.acquisition_sources, '{}') AS acquisition_sources,
+	coalesce(accession_dates.accession_dates, '{}') AS accession_dates
 FROM hierarchy summary_hierarchy
 	INNER JOIN misc ON misc.id = summary_hierarchy.id and misc.lifecyclestate != 'deleted'
-  INNER JOIN collectionspace_core core ON core.id = summary_hierarchy.id AND core.tenantid = $P{tenantid}
-  INNER JOIN summarydocumentations_common summary on summary.id = summary_hierarchy.id
-  LEFT JOIN summarydocumentations_common_types summary_type ON summary_type.id = summary.id AND summary_type.pos = 0
-  LEFT JOIN summarydocumentations_common_consultationnotes consultation ON consultation.id = summary.id AND consultation.pos = 0
-  LEFT JOIN summarydocumentations_common_treatmentnotes treatment ON treatment.id = summary.id AND treatment.pos = 0
-  LEFT JOIN LATERAL (
-    SELECT DISTINCT ON (hierarchy.parentid) hierarchy.parentid,
-      party.involvedparty,
-      ptg.title,
-      email.email
-    FROM hierarchy
-      INNER JOIN partiesinvolvedgroup party ON party.id = hierarchy.id AND
-        (party.involvedrole LIKE '%lineal_descendant%' OR party.involvedrole LIKE '%tribal_rep%')
-      INNER JOIN persons_common person ON person.shortidentifier = substring(party.involvedparty FROM '^urn:.*item:name\(([^)]+)\)')
-      INNER JOIN hierarchy person_hierarchy ON person_hierarchy.id = person.id
-      INNER JOIN hierarchy ptg_hierarchy ON ptg_hierarchy.parentid = person.id AND ptg_hierarchy.pos = 0
-      INNER JOIN persontermgroup ptg on ptg.id = ptg_hierarchy.id
-      LEFT JOIN contacts_common contact ON contact.initem = person_hierarchy.name
-      LEFT JOIN hierarchy email_hier ON email_hier.parentid = contact.id AND email_hier.name = 'contacts_common:emailGroupList' AND email_hier.pos = 0
-      INNER JOIN emailgroup email ON email.id = email_hier.id
-    WHERE hierarchy.name = 'summarydocumentations_common:partiesInvolvedGroupList' AND hierarchy.parentid = summary.id
-    ORDER BY hierarchy.parentid,
-      hierarchy.pos
-  ) partiesinvolved ON partiesinvolved.parentid = summary.id -- affiliation
-  LEFT JOIN LATERAL (
-    SELECT hierarchy.parentid,
-      array_agg(affiliation.tribeornation) AS tribeornation,
-      min(affiliation.basisofdetermination) AS basisofdetermination --?? idk which one to use maybe array agg as well
-    FROM hierarchy hierarchy
-      INNER JOIN affiliationgroup affiliation ON affiliation.id = hierarchy.id
-      AND hierarchy.name = 'summarydocumentations_common:affiliationGroupList'
-      AND hierarchy.parentid = summary.id
-    GROUP BY hierarchy.parentid
-  ) affiliation ON affiliation.parentid = summary.id -- cultural group
-  LEFT JOIN LATERAL (
-    SELECT hierarchy.parentid,
-      array_agg(culturalgroup.culture) AS culture
-    FROM hierarchy
-      INNER JOIN culturalgroup ON culturalgroup.id = hierarchy.id
-      AND hierarchy.name = 'summarydocumentations_common:culturalGroupList'
-      AND hierarchy.parentid = summary.id
-    GROUP BY hierarchy.parentid
-  ) culturalgroup ON culturalgroup.parentid = summary.id -- status group or whatever
-  LEFT JOIN LATERAL (
-    SELECT hierarchy.parentid,
-      status.status
-    FROM hierarchy
-      INNER JOIN statusgroup status ON status.id = hierarchy.id
-      AND hierarchy.name = 'summarydocumentations_common:statusGroupList'
-      AND hierarchy.pos = 0
-      AND hierarchy.parentid = summary.id
-  ) statusgroup ON statusgroup.parentid = summary.id
-  -- Object Fields:
-  --   + computedcurrentlocation | collectionobjects_common | agg
-  --   + Museum NAGPRA category determination | collectionobjects_nagpra_categorydeterminations | LIST
-  --   + Field Collection Place | collectionobjects_common_fieldcollectionplaces | LIST
-  --   + Field Collection Site | collectionobjects_common_fieldcollectionsites | LIST
-  --   + Field Collectors | collectionobjects_common_fieldcollectors | LIST
-  --   + Collection Date | structureddategroup ('collectionobjects_common:fieldCollectionDateGroup') | STRUCTURED_DATE
-  --   + Summary Object Object Count | objectcountgroup | sum
-  LEFT JOIN (
-    SELECT related_objects.summarycsid,
-      array_agg(obj.computedcurrentlocation) as locations
-    FROM collectionobjects_common obj
-    INNER JOIN related_objects on related_objects.object_id = obj.id
-    GROUP BY related_objects.summarycsid
-  ) object_data ON object_data.summarycsid = summary_hierarchy.name
-  LEFT JOIN LATERAL (
-    SELECT related_objects.summarycsid,
-      sum(ocg.objectcount) as object_count
-    FROM hierarchy ocg_hierarchy
-    INNER JOIN related_objects on related_objects.object_id = ocg_hierarchy.parentid
-    INNER JOIN objectcountgroup ocg ON ocg.id = ocg_hierarchy.id
-    WHERE ocg_hierarchy.name = 'collectionobjects_common:objectCountGroupList'
-    GROUP BY related_objects.summarycsid
-  ) object_count ON object_count.summarycsid = summary_hierarchy.name
-  LEFT JOIN LATERAL (
-    SELECT related_objects.summarycsid,
-      array_agg(ong.objectname) as object_names
-    FROM hierarchy ong_hierarchy
-    INNER JOIN related_objects on related_objects.object_id = ong_hierarchy.parentid
-    INNER JOIN objectnamegroup ong ON ong.id = ong_hierarchy.id
-    WHERE ong_hierarchy.name = 'collectionobjects_common:objectNameList'
-    GROUP BY related_objects.summarycsid
-  ) object_name ON object_name.summarycsid = summary_hierarchy.name
-  LEFT JOIN (
-    SELECT related_objects.summarycsid,
-      array_agg(fcp.item) as places
-    FROM collectionobjects_common_fieldcollectionplaces fcp
-    INNER JOIN related_objects on related_objects.object_id = fcp.id
-    GROUP BY related_objects.summarycsid
-  ) field_collection_places ON field_collection_places.summarycsid = summary_hierarchy.name
-  LEFT JOIN (
-    SELECT related_objects.summarycsid,
-      array_agg(fcs.item) as sites
-    FROM collectionobjects_common_fieldcollectionsites fcs
-    INNER JOIN related_objects on related_objects.object_id = fcs.id
-    GROUP BY related_objects.summarycsid
-  ) field_collection_sites ON field_collection_sites.summarycsid = summary_hierarchy.name
-  LEFT JOIN (
-    SELECT related_objects.summarycsid,
-      array_agg(collectors.item) as collectors
-    FROM collectionobjects_common_fieldcollectors collectors
-    INNER JOIN related_objects on related_objects.object_id = collectors.id
-    GROUP BY related_objects.summarycsid
-  ) field_collectors ON field_collectors.summarycsid = summary_hierarchy.name
-  LEFT JOIN (
-    SELECT related_objects.summarycsid,
-      array_agg(categories.item) as category_determinations
-    FROM collectionobjects_nagpra_nagpracategories categories
-    INNER JOIN related_objects on related_objects.object_id = categories.id
-    GROUP BY related_objects.summarycsid
-  ) nagpra_category_determinations ON nagpra_category_determinations.summarycsid = summary_hierarchy.name
-  LEFT JOIN LATERAL (
-    SELECT related_objects.summarycsid,
-      array_agg(sdg.datedisplaydate) AS dates
-    FROM hierarchy collection_date_hierarchy
-    INNER JOIN related_objects on related_objects.object_id = collection_date_hierarchy.parentid
-    INNER JOIN structureddategroup sdg ON sdg.id = collection_date_hierarchy.id
-    WHERE collection_date_hierarchy.name = 'collectionobjects_common:fieldCollectionDateGroup'
-    GROUP BY related_objects.summarycsid
-  ) field_collection_dates ON field_collection_dates.summarycsid = summary_hierarchy.name
-  -- Acquisition Fields:
-  --   + Accession number | acquisitions_common
-  --   + Acquisition Method | acquisitions_common
-  --   + Donor Source | acquisitions_common_acquisitionsources | LIST
-  --   + Accession Date | structureddategroup('') | STRUCTURED_DATE
-  LEFT JOIN (
-    SELECT related_acquisitions.summarycsid,
-      array_agg(acquisition.acquisitionreferencenumber) as acquisition_numbers,
-      array_agg(acquisition.acquisitionmethod) as acquisition_methods
-    FROM acquisitions_common acquisition
-    INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = acquisition.id
-    GROUP BY related_acquisitions.summarycsid
-  ) acquisition_data ON acquisition_data.summarycsid = summary_hierarchy.name
-  LEFT JOIN (
-    SELECT related_acquisitions.summarycsid,
-      array_agg(sources.item) AS acquisition_sources
-    FROM acquisitions_common_acquisitionsources sources
-    INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = sources.id
-    GROUP BY related_acquisitions.summarycsid
-  ) acquisition_sources ON acquisition_sources.summarycsid = summary_hierarchy.name
-  LEFT JOIN LATERAL (
-    SELECT related_acquisitions.summarycsid,
-      array_agg(sdg.datedisplaydate) AS accession_dates
-    FROM hierarchy accession_date_hierarchy
-      INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = accession_date_hierarchy.parentid
-      INNER JOIN structureddategroup sdg ON sdg.id = accession_date_hierarchy.id
-    WHERE accession_date_hierarchy.name = 'acquisitions_common:accessionDateGroup'
-    GROUP BY related_acquisitions.summarycsid
-  ) accession_dates ON accession_dates.summarycsid = summary_hierarchy.name
+	INNER JOIN collectionspace_core core ON core.id = summary_hierarchy.id AND core.tenantid = $P{tenantid}
+	INNER JOIN summarydocumentations_common summary on summary.id = summary_hierarchy.id
+	LEFT JOIN summarydocumentations_common_types summary_type ON summary_type.id = summary.id AND summary_type.pos = 0
+	LEFT JOIN summarydocumentations_common_consultationnotes consultation ON consultation.id = summary.id AND consultation.pos = 0
+	LEFT JOIN summarydocumentations_common_treatmentnotes treatment ON treatment.id = summary.id AND treatment.pos = 0
+	LEFT JOIN LATERAL (
+		SELECT DISTINCT ON (hierarchy.parentid) hierarchy.parentid,
+			party.involvedparty,
+			ptg.title,
+			email.email
+		FROM hierarchy
+			INNER JOIN partiesinvolvedgroup party ON party.id = hierarchy.id AND
+				(party.involvedrole LIKE '%lineal_descendant%' OR party.involvedrole LIKE '%tribal_rep%')
+			INNER JOIN persons_common person ON person.shortidentifier = substring(party.involvedparty FROM '^urn:.*item:name\(([^)]+)\)')
+			INNER JOIN hierarchy person_hierarchy ON person_hierarchy.id = person.id
+			INNER JOIN hierarchy ptg_hierarchy ON ptg_hierarchy.parentid = person.id AND ptg_hierarchy.pos = 0
+			INNER JOIN persontermgroup ptg on ptg.id = ptg_hierarchy.id
+			LEFT JOIN contacts_common contact ON contact.initem = person_hierarchy.name
+			LEFT JOIN hierarchy email_hier ON email_hier.parentid = contact.id AND email_hier.name = 'contacts_common:emailGroupList' AND email_hier.pos = 0
+			INNER JOIN emailgroup email ON email.id = email_hier.id
+		WHERE hierarchy.name = 'summarydocumentations_common:partiesInvolvedGroupList' AND hierarchy.parentid = summary.id
+		ORDER BY hierarchy.parentid,
+			hierarchy.pos
+	) partiesinvolved ON partiesinvolved.parentid = summary.id -- affiliation
+	LEFT JOIN LATERAL (
+		SELECT hierarchy.parentid,
+			array_agg(affiliation.tribeornation) AS tribeornation,
+			min(affiliation.basisofdetermination) AS basisofdetermination --?? idk which one to use maybe array agg as well
+		FROM hierarchy hierarchy
+			INNER JOIN affiliationgroup affiliation ON affiliation.id = hierarchy.id
+			AND hierarchy.name = 'summarydocumentations_common:affiliationGroupList'
+			AND hierarchy.parentid = summary.id
+		GROUP BY hierarchy.parentid
+	) affiliation ON affiliation.parentid = summary.id -- cultural group
+	LEFT JOIN LATERAL (
+		SELECT hierarchy.parentid,
+			array_agg(culturalgroup.culture) AS culture
+		FROM hierarchy
+			INNER JOIN culturalgroup ON culturalgroup.id = hierarchy.id
+			AND hierarchy.name = 'summarydocumentations_common:culturalGroupList'
+			AND hierarchy.parentid = summary.id
+		GROUP BY hierarchy.parentid
+	) culturalgroup ON culturalgroup.parentid = summary.id -- status group or whatever
+	LEFT JOIN LATERAL (
+		SELECT hierarchy.parentid,
+			status.status
+		FROM hierarchy
+			INNER JOIN statusgroup status ON status.id = hierarchy.id
+			AND hierarchy.name = 'summarydocumentations_common:statusGroupList'
+			AND hierarchy.pos = 0
+			AND hierarchy.parentid = summary.id
+	) statusgroup ON statusgroup.parentid = summary.id
+	-- Object Fields:
+	--   + computedcurrentlocation | collectionobjects_common | agg
+	--   + Museum NAGPRA category determination | collectionobjects_nagpra_categorydeterminations | LIST
+	--   + Field Collection Place | collectionobjects_common_fieldcollectionplaces | LIST
+	--   + Field Collection Site | collectionobjects_common_fieldcollectionsites | LIST
+	--   + Field Collectors | collectionobjects_common_fieldcollectors | LIST
+	--   + Collection Date | structureddategroup ('collectionobjects_common:fieldCollectionDateGroup') | STRUCTURED_DATE
+	--   + Summary Object Object Count | objectcountgroup | sum
+	LEFT JOIN (
+		SELECT related_objects.summarycsid,
+			array_agg(obj.computedcurrentlocation) as locations
+		FROM collectionobjects_common obj
+		INNER JOIN related_objects on related_objects.object_id = obj.id
+		GROUP BY related_objects.summarycsid
+	) object_data ON object_data.summarycsid = summary_hierarchy.name
+	LEFT JOIN LATERAL (
+		SELECT related_objects.summarycsid,
+			sum(ocg.objectcount) as object_count
+		FROM hierarchy ocg_hierarchy
+		INNER JOIN related_objects on related_objects.object_id = ocg_hierarchy.parentid
+		INNER JOIN objectcountgroup ocg ON ocg.id = ocg_hierarchy.id
+		WHERE ocg_hierarchy.name = 'collectionobjects_common:objectCountGroupList'
+		GROUP BY related_objects.summarycsid
+	) object_count ON object_count.summarycsid = summary_hierarchy.name
+	LEFT JOIN LATERAL (
+		SELECT related_objects.summarycsid,
+			array_agg(ong.objectname) as object_names
+		FROM hierarchy ong_hierarchy
+		INNER JOIN related_objects on related_objects.object_id = ong_hierarchy.parentid
+		INNER JOIN objectnamegroup ong ON ong.id = ong_hierarchy.id
+		WHERE ong_hierarchy.name = 'collectionobjects_common:objectNameList'
+		GROUP BY related_objects.summarycsid
+	) object_name ON object_name.summarycsid = summary_hierarchy.name
+	LEFT JOIN (
+		SELECT related_objects.summarycsid,
+			array_agg(fcp.item) as places
+		FROM collectionobjects_common_fieldcollectionplaces fcp
+		INNER JOIN related_objects on related_objects.object_id = fcp.id
+		GROUP BY related_objects.summarycsid
+	) field_collection_places ON field_collection_places.summarycsid = summary_hierarchy.name
+	LEFT JOIN (
+		SELECT related_objects.summarycsid,
+			array_agg(fcs.item) as sites
+		FROM collectionobjects_common_fieldcollectionsites fcs
+		INNER JOIN related_objects on related_objects.object_id = fcs.id
+		GROUP BY related_objects.summarycsid
+	) field_collection_sites ON field_collection_sites.summarycsid = summary_hierarchy.name
+	LEFT JOIN (
+		SELECT related_objects.summarycsid,
+			array_agg(collectors.item) as collectors
+		FROM collectionobjects_common_fieldcollectors collectors
+		INNER JOIN related_objects on related_objects.object_id = collectors.id
+		GROUP BY related_objects.summarycsid
+	) field_collectors ON field_collectors.summarycsid = summary_hierarchy.name
+	LEFT JOIN (
+		SELECT related_objects.summarycsid,
+			array_agg(categories.item) as category_determinations
+		FROM collectionobjects_nagpra_nagpracategories categories
+		INNER JOIN related_objects on related_objects.object_id = categories.id
+		GROUP BY related_objects.summarycsid
+	) nagpra_category_determinations ON nagpra_category_determinations.summarycsid = summary_hierarchy.name
+	LEFT JOIN LATERAL (
+		SELECT related_objects.summarycsid,
+			array_agg(sdg.datedisplaydate) AS dates
+		FROM hierarchy collection_date_hierarchy
+		INNER JOIN related_objects on related_objects.object_id = collection_date_hierarchy.parentid
+		INNER JOIN structureddategroup sdg ON sdg.id = collection_date_hierarchy.id
+		WHERE collection_date_hierarchy.name = 'collectionobjects_common:fieldCollectionDateGroup'
+		GROUP BY related_objects.summarycsid
+	) field_collection_dates ON field_collection_dates.summarycsid = summary_hierarchy.name
+	-- Acquisition Fields:
+	--   + Accession number | acquisitions_common
+	--   + Acquisition Method | acquisitions_common
+	--   + Donor Source | acquisitions_common_acquisitionsources | LIST
+	--   + Accession Date | structureddategroup('') | STRUCTURED_DATE
+	LEFT JOIN (
+		SELECT related_acquisitions.summarycsid,
+			array_agg(acquisition.acquisitionreferencenumber) as acquisition_numbers,
+			array_agg(acquisition.acquisitionmethod) as acquisition_methods
+		FROM acquisitions_common acquisition
+		INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = acquisition.id
+		GROUP BY related_acquisitions.summarycsid
+	) acquisition_data ON acquisition_data.summarycsid = summary_hierarchy.name
+	LEFT JOIN (
+		SELECT related_acquisitions.summarycsid,
+			array_agg(sources.item) AS acquisition_sources
+		FROM acquisitions_common_acquisitionsources sources
+		INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = sources.id
+		GROUP BY related_acquisitions.summarycsid
+	) acquisition_sources ON acquisition_sources.summarycsid = summary_hierarchy.name
+	LEFT JOIN LATERAL (
+		SELECT related_acquisitions.summarycsid,
+			array_agg(sdg.datedisplaydate) AS accession_dates
+		FROM hierarchy accession_date_hierarchy
+			INNER JOIN related_acquisitions on related_acquisitions.acquisition_id = accession_date_hierarchy.parentid
+			INNER JOIN structureddategroup sdg ON sdg.id = accession_date_hierarchy.id
+		WHERE accession_date_hierarchy.name = 'acquisitions_common:accessionDateGroup'
+		GROUP BY related_acquisitions.summarycsid
+	) accession_dates ON accession_dates.summarycsid = summary_hierarchy.name
 WHERE summary_hierarchy.primarytype = 'SummaryDocumentation' $P!{whereclause}]]>
 	</queryString>
 	<field name="documentationnumber" class="java.lang.String">
