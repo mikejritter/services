@@ -32,11 +32,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import org.apache.commons.io.FileUtils;
-import org.collectionspace.services.common.api.JEEServerDeployment;
 import org.collectionspace.services.config.ClientType;
 import org.collectionspace.services.config.ServiceConfig;
 import org.slf4j.Logger;
