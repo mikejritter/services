@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
-<!-- CollectionSpace default (security) authorization provider schema (XSD) 
-	Entity(s) : permission Used for: $LastChangedRevision: 916 $ $LastChangedDate: 
-	2009-11-05 16:59:20 -0800 (Thu, 05 Nov 2009) $ -->
-
+<!--
+	CollectionSpace default (security) authorization provider schema (XSD)
+	Entity(s) : permission
+	Used for:
+	$LastChangedRevision: 916
+	$ $LastChangedDate: 2009-11-05 16:59:20 -0800 (Thu, 05 Nov 2009) $
+	 -->
 <xs:schema
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	jaxb:version="2.1" elementFormDefault="unqualified"
-	xmlns:hj="http://hyperjaxb3.jvnet.org/ejb/schemas/customizations"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	jaxb:version="3.0"
+	xmlns:hj="urn:hyperjaxb3.jvnet.org:ejb:schemas:customizations"
 	xmlns:orm="http://java.sun.com/xml/ns/persistence/orm"
-	xmlns:ns="http://collectionspace.org/services/authorization/perms"
 	xmlns="http://collectionspace.org/services/authorization/perms"
 	targetNamespace="http://collectionspace.org/services/authorization/perms"
 	version="0.1"
-	jaxb:extensionBindingPrefixes="hj orm">
+	jaxb:extensionBindingPrefixes="hj">
 
 	<xs:element name="permission" type="permission" />
 	<xs:complexType name="permission">
@@ -33,7 +35,7 @@
 				(and attribute)
 				- effect describes the effect of the access control for the action
 				performed on the given resource (and attribute)
-            </xs:documentation>
+			</xs:documentation>
 			<xs:appinfo>
 				<hj:entity>
 					<orm:table name="permissions" />
@@ -93,15 +95,15 @@
 					</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
-		    <xs:element name="metadataProtection" type="xs:string" minOccurs="0" maxOccurs="1">
-	            <xs:annotation>
-	                <xs:appinfo>
-	                    <hj:basic>
-	                        <orm:column name="metadata_protection" nullable="true"/>
-	                    </hj:basic>
-	                </xs:appinfo>
-	            </xs:annotation>
-            </xs:element>
+			<xs:element name="metadataProtection" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<hj:basic>
+							<orm:column name="metadata_protection" nullable="true"/>
+						</hj:basic>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="actionsProtection" type="xs:string" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:appinfo>

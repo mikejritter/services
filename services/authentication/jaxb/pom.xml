@@ -1,52 +1,79 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <parent>
-        <groupId>org.collectionspace.services</groupId>
-        <artifactId>org.collectionspace.services.authentication</artifactId>
-        <version>${revision}</version>
-    </parent>
+  <parent>
+    <groupId>org.collectionspace.services</groupId>
+    <artifactId>org.collectionspace.services.authentication</artifactId>
+    <version>${revision}</version>
+  </parent>
 
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.collectionspace.services.authentication.jaxb</artifactId>
-    <name>services.authentication.jaxb</name>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.collectionspace.services.authentication.jaxb</artifactId>
+  <name>services.authentication.jaxb</name>
 
-    <properties>
-        <sql.file>authentication.sql</sql.file>
-        <sql.dir>src/main/resources/db/mysql</sql.dir>
-    </properties>
+  <properties>
+    <sql.file>authentication.sql</sql.file>
+    <sql.dir>src/main/resources/db/mysql</sql.dir>
+  </properties>
 
-    <dependencies>
-        
-        
-        <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>persistence-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-        <!-- Needed by hibernate-entitymanager, since we excluded dom4j:dom4j in order to upgrade to org.dom4j:dom4j -->
-        <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-        </dependency>
-        
+  <dependencies>
+    <dependency>
+      <groupId>jakarta.persistence</groupId>
+      <artifactId>jakarta.persistence-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
+    <!-- Needed by hibernate-entitymanager, since we excluded dom4j:dom4j in order to upgrade to org.dom4j:dom4j -->
+    <dependency>
+      <groupId>org.dom4j</groupId>
+      <artifactId>dom4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.jaxb</groupId>
+      <artifactId>hyperjaxb3-ejb-runtime</artifactId>
+      <version>4.0.8</version>
+    </dependency>
+  </dependencies>
 
-    </dependencies>
-
-    <build>
-        <finalName>collectionspace-services-authentication-jaxb</finalName>
-        <defaultGoal>install</defaultGoal>
-        <plugins>
-            <plugin>
-                <!-- maven-hyperjaxb3-plugin generates jaxb + jpa bindings -->
-                <groupId>org.jvnet.jaxb</groupId>
-                <artifactId>hyperjaxb3-ejb-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-    </build>
+  <build>
+    <finalName>collectionspace-services-authentication-jaxb</finalName>
+    <defaultGoal>install</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.jaxb</groupId>
+        <artifactId>jaxb-maven-plugin</artifactId>
+        <version>4.0.8</version>
+        <executions>
+          <execution>
+            <id>jaxb-codegen</id>
+            <phase>${jaxb.codegen.phase}</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <extension>true</extension>
+              <args>
+                <arg>-Xequals</arg>
+                <arg>-XhashCode</arg>
+                <arg>-Xinheritance</arg>
+                <arg>-Xhyperjaxb3-ejb</arg>
+              </args>
+              <plugins>
+                <plugin>
+                  <groupId>org.jvnet.jaxb</groupId>
+                  <artifactId>hyperjaxb3-ejb-plugin</artifactId>
+                  <version>4.0.8</version>
+                </plugin>
+              </plugins>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

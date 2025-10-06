@@ -12,16 +12,13 @@
 
 <xs:schema 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-    jaxb:version="1.0" elementFormDefault="unqualified"
-    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
-    xmlns:hj="http://hyperjaxb3.jvnet.org/ejb/schemas/customizations"
-    xmlns:orm="http://java.sun.com/xml/ns/persistence/orm"
-    xmlns:ans="http://collectionspace.org/services/authorization"
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    jaxb:version="3.0"
+    xmlns:hj="urn:hyperjaxb3.jvnet.org:ejb:schemas:customizations"
     xmlns="http://collectionspace.org/services/authorization"
     targetNamespace="http://collectionspace.org/services/authorization"
     version="0.1"
-    jaxb:extensionBindingPrefixes="hj orm xjc"
+    jaxb:extensionBindingPrefixes="hj"
     >
 
     <xs:complexType name="account_value" >
