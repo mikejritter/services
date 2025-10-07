@@ -1,37 +1,38 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-	<parent>
-		<groupId>org.collectionspace.services</groupId>
-		<artifactId>org.collectionspace.services.main</artifactId>
-		<version>${revision}</version>
-	</parent>
+  <parent>
+    <groupId>org.collectionspace.services</groupId>
+    <artifactId>org.collectionspace.services.main</artifactId>
+    <version>${revision}</version>
+  </parent>
 
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>org.collectionspace.services.jaxb</artifactId>
-	<name>services.jaxb</name>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.collectionspace.services.jaxb</artifactId>
+  <name>services.jaxb</name>
 
-	<dependencies>
-		
-		<dependency>
-			<groupId>org.jvnet.jaxb</groupId>
-			<artifactId>jaxb2-basics</artifactId>
-		</dependency>
-	</dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.jvnet.jaxb</groupId>
+      <artifactId>jaxb-plugins-runtime</artifactId>
+      <version>4.0.8</version>
+    </dependency>
+  </dependencies>
 
-	<build>
-		<finalName>collectionspace-services-jaxb</finalName>
-		<defaultGoal>install</defaultGoal>
-		<plugins>
-			<plugin>
-				<groupId>org.jvnet.jaxb</groupId>
-				<artifactId>jaxb-maven-plugin</artifactId>
-			</plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-            </plugin>
-		</plugins>
-	</build>
+  <build>
+    <finalName>collectionspace-services-jaxb</finalName>
+    <defaultGoal>install</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.jaxb</groupId>
+        <artifactId>jaxb-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

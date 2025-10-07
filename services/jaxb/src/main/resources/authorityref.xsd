@@ -17,26 +17,21 @@
 -->
 <xs:schema
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	jaxb:version="1.0" elementFormDefault="unqualified"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:cspace="http://collectionspace.org/services/jaxb"
+	jaxb:version="3.0"
 	xmlns="http://collectionspace.org/services/common/authorityref"
 	targetNamespace="http://collectionspace.org/services/common/authorityref"
 	version="0.1"
 	>
 
-    <!-- This is the base class for paginated lists -->
-    <xs:complexType name="abstractCommonList">
-        <xs:annotation>
-            <xs:appinfo>
-                <jaxb:class ref="org.collectionspace.services.jaxb.AbstractCommonList"/>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:complexType>
+	<xs:import namespace="http://collectionspace.org/services/jaxb" schemaLocation="AbstractCommonList.xsd" />
+
 
 	<xs:element name="authority-ref-list">
 		<xs:complexType>
-            <xs:complexContent>
-                <xs:extension base="abstractCommonList">
+			<xs:complexContent>
+				<xs:extension base="cspace:abstract-common-list">
 					<xs:sequence>
 						 <xs:element name="authority-ref-item" maxOccurs="unbounded">
 							<xs:complexType>
@@ -51,8 +46,8 @@
 							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
-                </xs:extension>
-            </xs:complexContent>        
+				</xs:extension>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 

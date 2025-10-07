@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-  jaxb:version="2.0" elementFormDefault="unqualified"
-  xmlns:ns="http://collectionspace.org/services/lifecycle"
-  xmlns="http://collectionspace.org/services/lifecycle"
-  targetNamespace="http://collectionspace.org/services/lifecycle" version="2.0">
-  
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+           jaxb:version="3.0"
+           xmlns="http://collectionspace.org/services/lifecycle"
+           targetNamespace="http://collectionspace.org/services/lifecycle" version="2.0">
+
   <xs:element name="lifecycle">
     <xs:complexType>
       <xs:sequence>
@@ -15,13 +15,13 @@
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:complexType name="transition-def-list">
       <xs:sequence>
         <xs:element maxOccurs="unbounded" name="transition-def" type="transition-def"/>
       </xs:sequence>
   </xs:complexType>
-  
+
     <xs:complexType name="transition-def">
       <xs:sequence>
         <xs:element name="description" type="xs:string"/>
@@ -29,13 +29,13 @@
       <xs:attribute name="destinationState" use="required" type="xs:NCName"/>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
-  
+
     <xs:complexType name="state-list">
       <xs:sequence>
         <xs:element maxOccurs="unbounded" name="state" type="state"/>
       </xs:sequence>
     </xs:complexType>
-  
+
     <xs:complexType name="state">
       <xs:sequence>
         <xs:element name="transition-list" type="transition-list"/>
@@ -44,7 +44,7 @@
       <xs:attribute name="initial" type="xs:boolean"/>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
-  
+
     <xs:complexType name="transition-list">
       <xs:sequence>
         <xs:element maxOccurs="unbounded" name="transition" type="xs:NCName"/>
