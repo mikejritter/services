@@ -37,7 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.collectionspace.authentication.AuthN;
 import org.collectionspace.services.authorization.AccountPermission;
@@ -91,7 +91,7 @@ import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.impl.DataModelImpl;
 import org.nuxeo.ecm.core.api.model.DocumentPart;
 import org.nuxeo.ecm.core.api.model.Property;
-import org.nuxeo.ecm.core.api.model.PropertyException;
+import org.nuxeo.ecm.core.api.PropertyException;
 import org.nuxeo.ecm.core.api.model.impl.ScalarProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,7 +251,7 @@ public abstract class   RemoteDocumentModelHandlerImpl<T, TL>
     public void completeUpdate(DocumentWrapper<DocumentModel> wrapDoc) throws Exception {
         DocumentModel docModel = wrapDoc.getWrappedObject();
         
-        String[] schemas = docModel.getDeclaredSchemas();
+        String[] schemas = docModel.getSchemas();
         Map<String, ObjectPartType> partsMetaMap = getServiceContext().getPartsMetadata();
         for (String schema : schemas) {
             ObjectPartType partMeta = partsMetaMap.get(schema);
@@ -353,7 +353,7 @@ public abstract class   RemoteDocumentModelHandlerImpl<T, TL>
             throws Exception {
 
         DocumentModel docModel = wrapDoc.getWrappedObject();
-        String[] schemas = docModel.getDeclaredSchemas();
+        String[] schemas = docModel.getSchemas();
         Map<String, ObjectPartType> partsMetaMap = getServiceContext().getPartsMetadata();
         for (String schema : schemas) {
             ObjectPartType partMeta = partsMetaMap.get(schema);
@@ -831,7 +831,7 @@ public abstract class   RemoteDocumentModelHandlerImpl<T, TL>
 	   			return true;
 	   		}
     	} catch(PropertyException pe) {
-    		String msg = "PropertyException on: "+ari.getProperty().getPath()+pe.getLocalizedMessage();
+    		String msg = "PropertyException on: "+ari.getProperty().getXPath()+pe.getLocalizedMessage();
     		if (logger.isDebugEnabled()) {
     			logger.debug(msg, pe);
     		} else {

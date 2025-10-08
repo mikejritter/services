@@ -39,7 +39,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.collectionspace.services.authorization.PermissionException;
 import org.collectionspace.services.client.CollectionSpaceClient;
-import org.collectionspace.services.common.CSWebApplicationException;
 import org.collectionspace.services.common.api.Tools;
 import org.collectionspace.services.common.config.ServiceConfigUtils;
 import org.collectionspace.services.common.config.TenantBindingConfigReaderImpl;

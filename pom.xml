@@ -25,7 +25,7 @@
 		<xml-bind.version>3.0.1</xml-bind.version>
 		<log4j.version>2.17.1</log4j.version>
 		<java.version>17</java.version>
-		<nuxeo.general.release>2023.24-SNAPSHOT</nuxeo.general.release>
+		<nuxeo.general.release>2023.32</nuxeo.general.release>
 		<nuxeo.shell.version>${nuxeo.general.release}</nuxeo.shell.version>
 		<nuxeo.platform.version>${nuxeo.general.release}</nuxeo.platform.version>
 		<nuxeo.core.version>${nuxeo.general.release}</nuxeo.core.version>
@@ -1120,6 +1120,9 @@
 				<artifactId>jaxb-fluent-api</artifactId>
 				<version>2.0.2</version>
 			</dependency>
+      <!--
+      version 4.X and the previous version 3.X artifacts are `org.jvnet.jaxb:jaxb-plugins`
+      -->
 			<dependency>
 				<groupId>org.jvnet.jaxb</groupId>
 				<artifactId>jaxb2-basics</artifactId>

@@ -66,7 +66,7 @@ import org.nuxeo.ecm.core.NXCore;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.Blob;
-import org.nuxeo.ecm.core.api.ClientException;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.IdRef;
@@ -493,7 +493,7 @@ public class NuxeoUtils {
      *
      * @throws DocumentException the document exception
      * @throws IOException Signals that an I/O exception has occurred.
-     * @throws ClientException the client exception
+     * @throws NuxeoException the client exception
      */
     public static DocumentModel getWorkspaceModel(
     		CoreSessionInterface repoSession, String workspaceName)
@@ -955,7 +955,7 @@ public class NuxeoUtils {
     }
 
     public static boolean documentExists(CoreSessionInterface repoSession,
-    		String csid) throws ClientException, DocumentException {
+    		String csid) throws NuxeoException, DocumentException {
 		boolean result = false;
 
 		String statement = String.format(

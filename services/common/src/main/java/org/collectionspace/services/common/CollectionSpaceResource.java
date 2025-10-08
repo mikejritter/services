@@ -31,7 +31,6 @@ import org.collectionspace.services.common.context.ServiceContextFactory;
 import org.collectionspace.services.common.document.DocumentHandler;
 import org.collectionspace.services.common.repository.RepositoryClient;
 import org.collectionspace.services.common.storage.StorageClient;
-//import org.jboss.resteasy.core.ResourceMethod;
 import org.jboss.resteasy.spi.HttpRequest;
 
 /**

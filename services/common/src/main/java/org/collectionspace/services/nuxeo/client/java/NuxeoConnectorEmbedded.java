@@ -88,7 +88,7 @@ public class NuxeoConnectorEmbedded {
 		String path = getNuxeoServerPath(serverRootPath);
 		if (path != null) {
 			File temp = new File(path);
-			if (temp.exists() == true) {
+			if (temp.exists()) {
 				result = temp;
 			} else {
 				errMsg = "The Nuxeo EP configuration directory is missing or inaccessible at: '" + path + "'.";
@@ -114,7 +114,7 @@ public class NuxeoConnectorEmbedded {
 	private void startNuxeoEP(String serverRootPath) throws Exception {
 		File nuxeoHomeDir = getNuxeoServerDir(serverRootPath);
 
-		if (logger.isInfoEnabled() == true) {
+		if (logger.isInfoEnabled()) {
 			logger.info("Starting Nuxeo EP server from configuration at: "
 					+ nuxeoHomeDir.getCanonicalPath());
 		}
@@ -139,13 +139,13 @@ public class NuxeoConnectorEmbedded {
 
 		try {
 			Repository defaultRepo = Framework.getService(RepositoryManager.class).getDefaultRepository();
-			coreSession = CoreInstance.openCoreSession(defaultRepo.getName(), new SystemPrincipal(null));
-        } catch (Throwable t) {
+			coreSession = CoreInstance.getCoreSession(defaultRepo.getName(), new SystemPrincipal(null));
+		} catch (Throwable t) {
 			logger.error(t.getMessage());
 			throw new RuntimeException("Could not start the Nuxeo EP Framework", t);
 		} finally {
 			if (coreSession != null) {
-				CoreInstance.closeCoreSession(coreSession);
+				coreSession.close();
 			}
 
 			if (transactionStarted) {
@@ -179,7 +179,7 @@ public class NuxeoConnectorEmbedded {
 	 * @throws java.lang.Exception
 	 */
 	public void release() throws Exception {
-		if (initialized == true) {
+		if (initialized) {
 			try {
 				client.tryDisconnect();
 				stopNuxeoEP();
@@ -193,9 +193,9 @@ public class NuxeoConnectorEmbedded {
 	public void initialize(String serverRootPath,
 			RepositoryClientConfigType repositoryClientConfig,
 			ServletContext servletContext) throws Exception {
-		if (initialized == false) {
+		if (!initialized) {
 			synchronized (this) {
-				if (initialized == false) {
+				if (!initialized) {
 					this.servletContext = servletContext;
 					this.repositoryClientConfig = repositoryClientConfig;
 					startNuxeoEP(serverRootPath);
@@ -241,21 +241,6 @@ public class NuxeoConnectorEmbedded {
 		return repoSession;
 	}
 
-
-// TODO: Remove after CSPACE-6375 issue is resolved.
-//    public List<RepositoryDescriptor> getRepositoryDescriptor(String name) throws Exception {
-//    	RepositoryDescriptor repo = null;
-//		RepositoryManager repositoryManager = Framework.getService(RepositoryManager.class);
-//        Iterable<RepositoryDescriptor> descriptorsList = repositoryManager.getDescriptors();
-//        for (RepositoryDescriptor descriptor : descriptorsList) {
-//        	String homeDir = descriptor.getHomeDirectory();
-//        	String config = descriptor.getConfigurationFile();
-//        	RepositoryFactory factor = descriptor.getFactory();
-//        }
-//
-//        return repo;
-//    }
-
 	/**
 	 * getClient get Nuxeo client for accessing Nuxeo services remotely using
 	 * Nuxeo Java (EJB) Remote APIS
@@ -264,7 +249,7 @@ public class NuxeoConnectorEmbedded {
 	 * @throws java.lang.Exception
 	 */
 	public NuxeoClientEmbedded getClient() throws Exception {
-		if (initialized == true) {
+		if (initialized) {
 			return client;
 		}
 		//
@@ -272,18 +257,6 @@ public class NuxeoConnectorEmbedded {
 		//
 		logger.error(ERROR_CONNECTOR_NOT_INITIALIZED);
 		throw new IllegalStateException(ERROR_CONNECTOR_NOT_INITIALIZED);
-	}
-
-	void releaseClient() throws Exception {
-		if (initialized == true) {
-			// Do nothing.
-		} else {
-			//
-			// Nuxeo connection was not initialized
-			//
-			logger.error(ERROR_CONNECTOR_NOT_INITIALIZED);
-			throw new IllegalStateException(ERROR_CONNECTOR_NOT_INITIALIZED);
-		}
 	}
 
 	/**

@@ -41,7 +41,7 @@ import org.collectionspace.services.nuxeo.client.java.CoreSessionInterface;
 // All of these Nuxeo specific classes should not be here.  This is supposed to be
 // a repository-neutral interface.
 //
-import org.nuxeo.ecm.core.api.ClientException;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
 
@@ -115,7 +115,7 @@ public interface RepositoryClient<IT, OT> extends StorageClient {
     		String csid)
             throws Exception;
 
-    public String getDocURI(DocumentWrapper<DocumentModel> wrappedDoc) throws ClientException;
+    public String getDocURI(DocumentWrapper<DocumentModel> wrappedDoc) throws NuxeoException;
 
     /**
      * Find wrapped documentModel from the Nuxeo repository

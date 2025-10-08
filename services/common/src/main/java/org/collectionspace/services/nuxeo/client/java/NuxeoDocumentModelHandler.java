@@ -54,8 +54,6 @@ import org.collectionspace.services.config.service.DocHandlerParams;
 import org.collectionspace.services.config.service.ListResultField;
 import org.collectionspace.services.jaxb.AbstractCommonList;
 import org.collectionspace.services.jaxb.AbstractCommonList.ListItem;
-import org.collectionspace.services.nuxeo.client.java.CommonList;
-import org.collectionspace.services.nuxeo.client.java.RemoteDocumentModelHandlerImpl;
 import org.collectionspace.services.nuxeo.util.NuxeoUtils;
 import org.dom4j.Document;
 import org.nuxeo.ecm.core.api.DocumentModel;
@@ -68,7 +66,7 @@ import org.w3c.dom.Element;
  * This class is generified by the marker type T,
  * where T is expected to map to something like BlobCommon, MediaCommon, ObjectexitCommon, etc.,
  * and so on for every JAXB-generated schema class.
- *
+ * <p>
  * User: laramie
  * $LastChangedRevision: $
  * $LastChangedDate: $
@@ -252,9 +250,10 @@ public abstract class NuxeoDocumentModelHandler<T> extends RemoteDocumentModelHa
 		if (Tools.isBlank(markRtSbjOrObj)) {
 			markRtSbjOrObj = null;
 		} else {
-			if (Tools.isBlank(markRtSbj) == false) {
-				logger.warn(String.format("Ignoring query param %s=%s since overriding query param %s=%s exists.",
-						IQueryManager.MARK_RELATED_TO_CSID_AS_SUBJECT, markRtSbj, IQueryManager.MARK_RELATED_TO_CSID_AS_EITHER, markRtSbjOrObj));
+			if (!Tools.isBlank(markRtSbj)) {
+				logger.warn("Ignoring query param {}={} since overriding query param {}={} exists.",
+				            IQueryManager.MARK_RELATED_TO_CSID_AS_SUBJECT, markRtSbj,
+				            IQueryManager.MARK_RELATED_TO_CSID_AS_EITHER, markRtSbjOrObj);
 			}
 			markRtSbj = markRtSbjOrObj; // Mark the record as related independent of whether it is the subject or object of a relationship
 		}
@@ -335,7 +334,7 @@ public abstract class NuxeoDocumentModelHandler<T> extends RemoteDocumentModelHa
 					Object value = getListResultValue(docModel, schema, field);
 					if (value != null && value instanceof String) { // If it is String that is either null or empty, we set our value to null
 						String strValue = (String) value;
-						if (strValue.trim().isEmpty() == true) {
+						if (strValue.trim().isEmpty()) {
 							value = null; // We found an "empty" string value, so just set the value to null so we don't return anything.
 						}
 					}
@@ -398,7 +397,7 @@ public abstract class NuxeoDocumentModelHandler<T> extends RemoteDocumentModelHa
 
 		if (docHandlerParams != null) {
 			String title = docHandlerParams.getDublinCoreTitle();
-			if (Tools.isEmpty(title) == false) {
+			if (!Tools.isEmpty(title)) {
 				DocumentModel docModel = wrapDoc.getWrappedObject();
 				docModel.setPropertyValue("dublincore:title", title);
 			}

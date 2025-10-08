@@ -31,11 +31,11 @@ import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
-import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.model.Property;
-import org.nuxeo.ecm.core.api.model.PropertyException;
+import org.nuxeo.ecm.core.api.PropertyException;
 import org.nuxeo.ecm.core.api.model.PropertyNotFoundException;
 import org.nuxeo.ecm.core.api.model.impl.primitives.StringProperty;
 import org.slf4j.Logger;
@@ -48,7 +48,6 @@ import org.collectionspace.services.client.PoxPayloadOut;
 import org.collectionspace.services.client.Profiler;
 import org.collectionspace.services.common.CSWebApplicationException;
 import org.collectionspace.services.common.ServiceMain;
-import org.collectionspace.services.common.ServletTools;
 import org.collectionspace.services.common.StoredValuesUriTemplate;
 import org.collectionspace.services.common.UriTemplateFactory;
 import org.collectionspace.services.common.UriTemplateRegistry;
@@ -397,17 +396,17 @@ public class RefNameServiceUtils {
             String refPropName, // authRef or termRef, authorities or vocab terms.
             DocumentFilter filter,
             boolean useDefaultOrderByClause,
-            boolean computeTotal) throws DocumentException, DocumentNotFoundException {
+            boolean computeTotal) throws DocumentException {
         AuthorityRefDocList wrapperList = new AuthorityRefDocList();
-        AbstractCommonList commonList = (AbstractCommonList) wrapperList;
+        // AbstractCommonList commonList = wrapperList;
         int pageNum = filter.getStartPage();
         int pageSize = filter.getPageSize();
 
         List<AuthorityRefDocList.AuthorityRefDocItem> list =
                 wrapperList.getAuthorityRefDocItem();
 
-        Map<String, ServiceBindingType> queriedServiceBindings = new HashMap<String, ServiceBindingType>();
-        Map<String, List<AuthRefConfigInfo>> authRefFieldsByService = new HashMap<String, List<AuthRefConfigInfo>>();
+        Map<String, ServiceBindingType> queriedServiceBindings = new HashMap<>();
+        Map<String, List<AuthRefConfigInfo>> authRefFieldsByService = new HashMap<>();
 
         NuxeoRepositoryClientImpl nuxeoRepoClient = (NuxeoRepositoryClientImpl) repoClient;
         try {
@@ -442,7 +441,7 @@ public class RefNameServiceUtils {
             }
 
             String fieldList = "docType|docId|docNumber|docName|sourceField|uri|refName|updatedAt|workflowState";  // FIXME: Should not be hard-coded string
-            commonList.setFieldsReturned(fieldList);
+            wrapperList.setFieldsReturned(fieldList);
 
             // As a side-effect, the method called below modifies the value of
             // the 'list' variable, which holds the list of references to
@@ -462,16 +461,16 @@ public class RefNameServiceUtils {
             		queriedServiceBindings, authRefFieldsByService, // the actual list size needs to be updated to the size of "list"
                     list, pageSize, pageNum);
 
-            commonList.setPageSize(pageSize);
+            wrapperList.setPageSize(pageSize);
 
             // Values returned in the pagination block above the list items
             // need to reflect the number of references to authority items
             // returned, rather than the number of documents originally scanned
             // to find such references.
             // This will be an estimate only...
-            commonList.setPageNum(pageNum);
-           	commonList.setTotalItems(nRefsFound);	// Accurate if total was scanned, otherwise, just an estimate
-            commonList.setItemsInPage(list.size());
+            wrapperList.setPageNum(pageNum);
+           	wrapperList.setTotalItems(nRefsFound);	// Accurate if total was scanned, otherwise, just an estimate
+            wrapperList.setItemsInPage(list.size());
 
             if (logger.isDebugEnabled() && (nRefsFound < docList.size())) {
                 logger.debug("Internal curiosity: got fewer matches of refs than # docs matched..."); // We found a ref to ourself and have excluded it.
@@ -794,7 +793,7 @@ public class RefNameServiceUtils {
     }
 
     // TODO there are multiple copies of this that should be put somewhere common.
-	protected static String getRefname(DocumentModel docModel) throws ClientException {
+	protected static String getRefname(DocumentModel docModel) throws NuxeoException {
 		String result = (String)docModel.getProperty(CollectionSpaceClient.COLLECTIONSPACE_CORE_SCHEMA,
 				CollectionSpaceClient.COLLECTIONSPACE_CORE_REFNAME);
 		return result;
@@ -903,7 +902,7 @@ public class RefNameServiceUtils {
                 try {
                 	String itemRefName = getRefname(docModel);
                 	ilistItem.setRefName(itemRefName);
-                } catch (ClientException ce) {
+                } catch (NuxeoException ce) {
                     throw new RuntimeException(
                             "processRefObjsDocList: Problem fetching refName from item Object: "
                             		+ ce.getLocalizedMessage());
@@ -1003,7 +1002,7 @@ public class RefNameServiceUtils {
                 						+ refName + "]");
                 	}
                 }
-            } catch (ClientException ce) {
+            } catch (NuxeoException ce) {
             	throw new RuntimeException(
             			"getAuthorityRefDocs: Problem fetching values from repo: " + ce.getLocalizedMessage());
             }
@@ -1181,12 +1180,12 @@ public class RefNameServiceUtils {
 	            			:refNameToMatch.equals(value)))
                     || ((refNameToMatch == null) && Tools.notBlank(value))) {
                 // Found a match
-                logger.debug("Found a match on property: " + prop.getPath() + " with value: [" + value + "]");
+                logger.debug("Found a match on property: " + prop.getXPath() + " with value: [" + value + "]");
                 AuthRefInfo ari = new AuthRefInfo(arci, prop);
                 authRefInfoList.add(ari);
             }
         } catch (PropertyException pe) {
-            logger.debug("PropertyException on: " + prop.getPath() + pe.getLocalizedMessage());
+            logger.debug("PropertyException on: " + prop.getXPath() + pe.getLocalizedMessage());
         }
     }
 
