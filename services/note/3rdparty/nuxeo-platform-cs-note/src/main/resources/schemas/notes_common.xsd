@@ -13,7 +13,6 @@
 
 <xs:schema 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:ns="http://collectionspace.org/note/"
     xmlns="http://collectionspace.org/note/"
     targetNamespace="http://collectionspace.org/note/"
     version="0.1">
