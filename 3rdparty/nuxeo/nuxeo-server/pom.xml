@@ -234,12 +234,6 @@
       </dependency>
       <dependency>
         <groupId>org.nuxeo.ecm.platform</groupId>
-        <artifactId>nuxeo-platform-filemanager-api</artifactId>
-        <version>${nuxeo.general.release}</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.nuxeo.ecm.platform</groupId>
         <artifactId>nuxeo-platform-filemanager-core</artifactId>
         <version>${nuxeo.general.release}</version>
         <scope>runtime</scope>
@@ -476,13 +470,6 @@
 
       <dependency>
         <groupId>org.nuxeo.ecm.platform</groupId>
-        <artifactId>nuxeo-platform-imaging-api</artifactId>
-        <version>${nuxeo.general.release}</version>
-        <scope>runtime</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.nuxeo.ecm.platform</groupId>
         <artifactId>nuxeo-platform-imaging-convert</artifactId>
         <version>${nuxeo.general.release}</version>
         <scope>runtime</scope>
@@ -628,10 +615,6 @@
     </dependency>
     <dependency>
       <groupId>org.nuxeo.ecm.platform</groupId>
-      <artifactId>nuxeo-platform-filemanager-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.nuxeo.ecm.platform</groupId>
       <artifactId>nuxeo-platform-filemanager-core</artifactId>
     </dependency>
     <dependency>
@@ -748,11 +731,6 @@
     <dependency>
       <groupId>org.nuxeo.ecm.core</groupId>
       <artifactId>nuxeo-core-management-jtajca</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nuxeo.ecm.platform</groupId>
-      <artifactId>nuxeo-platform-imaging-api</artifactId>
     </dependency>
 
     <dependency>
