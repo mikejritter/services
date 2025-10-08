@@ -6,14 +6,18 @@
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
   xmlns:hj="urn:hyperjaxb3.jvnet.org:ejb:schemas:customizations"
-  xmlns:cspace="http://collectionspace.org/services/jaxb"
   jaxb:version="3.0"
   jaxb:extensionBindingPrefixes="hj"
 >
 
     <xs:include schemaLocation="accounts_common.xsd"/>
-    <xs:import namespace="http://collectionspace.org/services/jaxb"
-               schemaLocation="maven:org.collectionspace.services:org.collectionspace.services.jaxb:jar::!/AbstractCommonList.xsd" />
+    <xs:complexType name="abstract-common-list">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class ref="org.collectionspace.services.jaxb.AbstractCommonList" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:complexType>
 
     <!--
     Avoid XmlRootElement nightmare:
@@ -33,7 +37,7 @@
                 </xs:appinfo>
             </xs:annotation>
             <xs:complexContent>
-                <xs:extension base="cspace:abstract-common-list">
+                <xs:extension base="abstract-common-list">
                     <xs:sequence>
                         <xs:element name="account-list-item" maxOccurs="unbounded">
                             <xs:complexType>
@@ -85,7 +89,7 @@
                 </xs:appinfo>
             </xs:annotation>
             <xs:complexContent>
-                <xs:extension base="cspace:abstract-common-list">
+                <xs:extension base="abstract-common-list">
 		            <xs:sequence>
 		                <xs:element name="tenant-list-item" maxOccurs="unbounded">
 		                    <xs:complexType>
