@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cspace.services.version>${revision}</cspace.services.version>
 		<cspace.services.client.version>${revision}</cspace.services.client.version>
-		<tomcat.version>10.1.47</tomcat.version>
+		<tomcat.version>9.0.111</tomcat.version>
 		<java.servlet.api.version>4.0.0</java.servlet.api.version>
 		<java.servlet.jsp.version>3.0.0</java.servlet.jsp.version>
 		<java.el.api.version>4.0.0</java.el.api.version>
