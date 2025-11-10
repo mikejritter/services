@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Properties;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
@@ -52,66 +49,6 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-/**
- * Private class for SSL support
- */
-class HttpsTrustManager implements X509TrustManager {
-
-	@Override
-	public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-			throws CertificateException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-			throws CertificateException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public X509Certificate[] getAcceptedIssuers() {
-		return new X509Certificate[]{};
-	}
-
-}
-
-/**
- * Private class for JAX-RS authentication
- */
-class Authenticator implements ClientRequestFilter {
-
-    private final String user;
-    private final String password;
-
-    public Authenticator(String user, String password) {
-        this.user = user;
-        this.password = password;
-    }
-
-    @Override
-    public void filter(ClientRequestContext requestContext) throws IOException {
-        MultivaluedMap<String, Object> headers = requestContext.getHeaders();
-        final String basicAuthentication = getBasicAuthentication();
-        headers.add("Authorization", basicAuthentication);
-
-    }
-
-    private String getBasicAuthentication() {
-    	String result = null;
-        String token = this.user + ":" + this.password;
-        try {
-            result = "Basic " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException("Cannot encode with UTF-8", ex);
-        }
-        
-        return result;
-    }
-}
 
 
 /**
@@ -246,14 +183,6 @@ public abstract class AbstractServiceClientImpl<CLT, REQUEST_PT, RESPONSE_PT, P 
     protected String getCommonPartName(String commonPrefix) {
         return commonPrefix + PART_LABEL_SEPARATOR + PART_COMMON_LABEL;
     }
-
-//    /**
-//     * Gets the service path component.
-//     *
-//     * @return the service path component
-//     */
-//    abstract public String getServicePathComponent();
-
 
     /*
      * (non-Javadoc)
@@ -631,7 +560,6 @@ public abstract class AbstractServiceClientImpl<CLT, REQUEST_PT, RESPONSE_PT, P 
      * in the AbstractCommonList type will be returned to the callers
      */
 
-    
     /*
      * (non-Javadoc)
      *
@@ -661,5 +589,39 @@ public abstract class AbstractServiceClientImpl<CLT, REQUEST_PT, RESPONSE_PT, P 
     @Override
     public String getTenantName() {
     	return this.getProperty(TENANT_ID_PROPERTY);
+    }
+
+    /**
+     * Private class for JAX-RS authentication
+     */
+    static class Authenticator implements ClientRequestFilter {
+
+        private final String user;
+        private final String password;
+
+        public Authenticator(String user, String password) {
+            this.user = user;
+            this.password = password;
+        }
+
+        @Override
+        public void filter(ClientRequestContext requestContext) throws IOException {
+            MultivaluedMap<String, Object> headers = requestContext.getHeaders();
+            final String basicAuthentication = getBasicAuthentication();
+            headers.add("Authorization", basicAuthentication);
+
+        }
+
+        private String getBasicAuthentication() {
+            String result = null;
+            String token = this.user + ":" + this.password;
+            try {
+                result = "Basic " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException ex) {
+                throw new IllegalStateException("Cannot encode with UTF-8", ex);
+            }
+
+            return result;
+        }
     }
 }
