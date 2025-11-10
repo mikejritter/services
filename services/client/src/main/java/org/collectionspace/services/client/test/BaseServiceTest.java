@@ -32,12 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import javax.activation.MimetypesFileTypeMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
@@ -46,20 +43,13 @@ import jakarta.xml.bind.MarshalException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.w3c.dom.Document;
 import org.collectionspace.services.client.AuthorityClient;
 import org.collectionspace.services.client.CollectionSpaceClient;
 import org.collectionspace.services.client.CollectionSpaceClientUtils;
@@ -68,8 +58,14 @@ import org.collectionspace.services.client.PayloadOutputPart;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.client.PoxPayloadOut;
 import org.collectionspace.services.client.TestServiceClient;
-import org.collectionspace.services.jaxb.AbstractCommonList;
 import org.collectionspace.services.common.api.FileTools;
+import org.collectionspace.services.jaxb.AbstractCommonList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 
 /**
  * BaseServiceTest.
@@ -84,8 +80,6 @@ import org.collectionspace.services.common.api.FileTools;
 public abstract class BaseServiceTest<CLT> {
 	//A default MIME type result
     static protected final String DEFAULT_MIME = "application/octet-stream; charset=ISO-8859-1";
-    //Maven's base directory -i.e., the one containing the current pom.xml
-    protected static final String MAVEN_BASEDIR_PROPERTY = "maven.basedir";
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(BaseServiceTest.class);
     
@@ -172,20 +166,12 @@ public abstract class BaseServiceTest<CLT> {
     public BaseServiceTest() {
         super();
     }
-    
-    protected int getExpectedStatusCode() {
-    	return this.testExpectedStatusCode;
-    }
-    
-    protected ServiceRequestType getRequestType() {
-    	return testRequestType;
-    }
 
     //
     // Decide if cleanup should happen
     //
     protected boolean cleanupCancelled() {
-    	if (cancelCleanup == false) {
+    	if (!cancelCleanup) {
 	        String noTestCleanup = System.getProperty(NO_TEST_CLEANUP);
 	        if (Boolean.TRUE.toString().equalsIgnoreCase(noTestCleanup)) {
 	            cancelCleanup = true;
@@ -193,10 +179,6 @@ public abstract class BaseServiceTest<CLT> {
     	}
         
         return cancelCleanup;
-    }
-    
-    protected void cancelCleanup() {
-    	cancelCleanup = true;
     }
 
     /*
@@ -355,10 +337,6 @@ public abstract class BaseServiceTest<CLT> {
         return serviceClient.getBaseURL() + getServiceName(); //FIXME: REM - This should probably be calling getServicePathComponent() and not getServiceName();
     }
 
-    public String getServiceClientTenantID() {
-        return serviceClient.getProperty("cspace.tenantID");
-    }
-
     /**
      * Returns the URL of a specific resource managed by a service, and
      * designated by an identifier (such as a universally unique ID, or UUID).
@@ -510,7 +488,7 @@ public abstract class BaseServiceTest<CLT> {
 		PayloadInputPart payloadInputPart = input.getPart(label);
 		if (payloadInputPart != null) {
 			result = payloadInputPart.getBody();
-		} else if (logger.isWarnEnabled() == true) {
+		} else if (logger.isWarnEnabled()) {
 			logger.warn("Payload part: " + label + " is missing from payload: " + input.getName());
 		}
 		
@@ -523,7 +501,7 @@ public abstract class BaseServiceTest<CLT> {
 		PayloadOutputPart payloadOutPart = output.getPart(label);
 		if (payloadOutPart != null) {
 			result = payloadOutPart.getBody();
-		} else if (logger.isWarnEnabled() == true) {
+		} else if (logger.isWarnEnabled()) {
 			logger.warn("Payload part: " + label + " is missing from payload: " + output.getName());
 		}
 		
@@ -615,23 +593,6 @@ public abstract class BaseServiceTest<CLT> {
     }
 
     /**
-     * Gets the xml document.
-     *
-     * @param fileName the file name
-     * @return the xml document
-     * @throws Exception the exception
-     */
-    static protected Document getXmlDocument(String fileName) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        File f = new File(fileName);
-        if (!f.exists()) {
-            throw new IllegalArgumentException("test data file " + fileName + " not found!");
-        }
-        // Create the builder and parse the file
-        return factory.newDocumentBuilder().parse(f);
-    }
-
-    /**
      * Gets the xml document as string.
      *
      * @param fileName the file name
@@ -641,22 +602,6 @@ public abstract class BaseServiceTest<CLT> {
     static protected String getXmlDocumentAsString(String fileName) throws Exception {
         String result = FileUtils.readFileToString(new File(fileName), "UTF8");
         return result;
-    }
-
-    /**
-     * Map as string.
-     *
-     * @param map the map
-     * @return the string
-     */
-    protected String mapAsString(MultivaluedMap<String, Object> map) {
-        StringBuffer sb = new StringBuffer();
-        for (Object entry : map.entrySet()) {
-            MultivaluedMap.Entry<String, Object> mentry = (MultivaluedMap.Entry<String, Object>) entry;
-            sb.append("    name=" + mentry.getKey());
-            sb.append(" value=" + mentry.getValue() + "\n");
-        }
-        return sb.toString();
     }
 
     /**
@@ -714,7 +659,7 @@ public abstract class BaseServiceTest<CLT> {
     }
         
     protected void logTestBanner(Logger logger, String testName) {
-    	if (logger.isDebugEnabled() == true) {
+    	if (logger.isDebugEnabled()) {
     		logger.debug(getTestBanner(testName));
     	}
     }
@@ -776,7 +721,7 @@ public abstract class BaseServiceTest<CLT> {
      */
     @AfterClass(alwaysRun = true)
     public void cleanUp() throws Exception {
-        if (cleanupCancelled() == true) {
+        if (cleanupCancelled()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Skipping Cleanup phase ...");
             }
@@ -884,34 +829,7 @@ public abstract class BaseServiceTest<CLT> {
         testRequestType = ServiceRequestType.UPDATE;
         testSetup(testExpectedStatusCode, testRequestType);
     }
-	
-    /**
-     * Sets up update tests with an empty entity body.
-     */
-    protected void setupUpdateWithEmptyEntityBody() {
-        testExpectedStatusCode = STATUS_BAD_REQUEST;
-        testRequestType = ServiceRequestType.UPDATE;
-        testSetup(testExpectedStatusCode, testRequestType);
-    }
 
-    /**
-     * Sets up update tests with malformed xml.
-     */
-    protected void setupUpdateWithMalformedXml() {
-        testExpectedStatusCode = STATUS_BAD_REQUEST;
-        testRequestType = ServiceRequestType.UPDATE;
-        testSetup(testExpectedStatusCode, testRequestType);
-    }
-    
-    /**
-     * Sets up update tests with wrong xml schema.
-     */
-    protected void setupUpdateWithWrongXmlSchema() {
-        testExpectedStatusCode = STATUS_BAD_REQUEST;
-        testRequestType = ServiceRequestType.UPDATE;
-        testSetup(testExpectedStatusCode, testRequestType);
-    }
-    
     /**
      * Sets up update non existent tests
      */

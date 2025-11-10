@@ -1,7 +1,6 @@
 package org.collectionspace.services.common.test;
 
 import java.io.ByteArrayInputStream;
-
 import javax.xml.namespace.QName;
 
 import jakarta.xml.bind.JAXBException;

@@ -75,14 +75,6 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     private final String UTF8_DATA_SAMPLE = "Audiorecording album cover signed by Lech "
             + "Wa" + '\u0142' + '\u0119' + "sa";
 
-//    /* (non-Javadoc)
-//     * @see org.collectionspace.services.client.test.BaseServiceTest#getServicePathComponent()
-//     */
-//    @Override
-//    protected String getServicePathComponent() {
-//        return new CollectionObjectClient().getServicePathComponent();
-//    }
-
 	@Override
 	protected String getServiceName() {
 		return CollectionObjectClient.SERVICE_NAME;
@@ -236,7 +228,6 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     public void createFromXmlRFWS3(String testName) throws Exception {
     	String testDataDir = System.getProperty("test-data.fileName");
         String newId =
-            //createFromXmlFile(testName, "./target/test-classes/test-data/repfield_whitesp3.xml", false);
         	createFromXmlFile(testName, testDataDir + "/repfield_whitesp3.xml", false);
         testSubmitRequest(newId);
     }
@@ -342,96 +333,6 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     public void createWithWrongXmlSchema(String testName) throws Exception {
     	//FIXME: Should this test really be empty?
     }
-
-
-/*
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "testSubmitRequest"})
-    public void createWithEmptyEntityBody(String testName) throwsException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupCreateWithEmptyEntityBody();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getServiceRootURL();
-        String mediaType = MediaType.APPLICATION_XML;
-        final String entity = "";
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "testSubmitRequest"})
-    public void createWithMalformedXml(String testName) throws Exception {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupCreateWithMalformedXml();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getServiceRootURL();
-        String mediaType = MediaType.APPLICATION_XML;
-        final String entity = MALFORMED_XML_DATA; // Constant from base class.
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "testSubmitRequest"})
-    public void createWithWrongXmlSchema(String testName) throws Exception {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupCreateWithWrongXmlSchema();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getServiceRootURL();
-        String mediaType = MediaType.APPLICATION_XML;
-        final String entity = WRONG_XML_SCHEMA_DATA;
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-*/
 
    /**
     * Test how the service handles, in a Create request, payloads
@@ -618,95 +519,6 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     public void updateWithWrongXmlSchema(String testName) throws Exception {
     	//FIXME: Should this test really be empty?
     }
-
-/*
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "update", "testSubmitRequest"})
-    public void updateWithEmptyEntityBody(String testName) throws Exception {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupUpdateWithEmptyEntityBody();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getResourceURL(knownResourceId);
-        String mediaType = MediaType.APPLICATION_XML;
-        final String entity = "";
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "update", "testSubmitRequest"})
-    public void updateWithMalformedXml() throws Exception {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupUpdateWithMalformedXml();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getResourceURL(knownResourceId);
-        final String entity = MALFORMED_XML_DATA;
-        String mediaType = MediaType.APPLICATION_XML;
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-
-    @Override
-    @Test(dataProvider="testName", dataProviderClass=AbstractServiceTest.class,
-    dependsOnMethods = {"create", "update", "testSubmitRequest"})
-    public void updateWithWrongXmlSchema(String testName) throws Exception {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testBanner(testName, CLASS_NAME));
-        }
-        // Perform setup.
-        setupUpdateWithWrongXmlSchema();
-
-        // Submit the request to the service and store the response.
-        String method = REQUEST_TYPE.httpMethodName();
-        String url = getResourceURL(knownResourceId);
-        String mediaType = MediaType.APPLICATION_XML;
-        final String entity = WRONG_XML_SCHEMA_DATA;
-        int statusCode = submitRequest(method, url, mediaType, entity);
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if(logger.isDebugEnabled()){
-        logger.debug(testName + ": url=" + url +
-        " status=" + statusCode);
-        }
-        Assert.assertTrue(REQUEST_TYPE.isValidStatusCode(statusCode),
-        invalidStatusCodeMessage(REQUEST_TYPE, statusCode));
-        Assert.assertEquals(statusCode, EXPECTED_STATUS_CODE);
-    }
-*/
 
     @Override
     public void updateNonExistent(String testName) throws Exception {

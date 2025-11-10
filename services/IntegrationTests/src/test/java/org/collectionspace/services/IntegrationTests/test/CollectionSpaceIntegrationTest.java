@@ -26,14 +26,10 @@
  */
 package org.collectionspace.services.IntegrationTests.test;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Marshaller;
 import org.collectionspace.services.client.PayloadInputPart;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.collectionobject.CollectionobjectsCommon;
@@ -47,12 +43,6 @@ import org.collectionspace.services.relation.RelationsCommon;
  * The Class CollectionSpaceIntegrationTest.
  */
 public abstract class CollectionSpaceIntegrationTest {
-    protected List<String> allRelationResourceIdsCreated = new ArrayList<String>();
-    protected List<String> allResourceIdsCreated = new ArrayList<String>();
-
-	/*
-	 * Package scoped methods.
-	 */
 
 	/**
 	 * Fill collection object.
@@ -125,10 +115,10 @@ public abstract class CollectionSpaceIntegrationTest {
     	relation.setSubjectDocumentType(subjectDocumentType);
     	relation.setObjectCsid(objectCsid);
     	relation.setObjectDocumentType(objectDocumentType);
-        
+
         relation.setRelationshipType(rt);
     }
-	
+
 	/**
 	 * Creates the identifier.
 	 * 
@@ -141,16 +131,16 @@ public abstract class CollectionSpaceIntegrationTest {
 
 	String extractId(Response res) {
 		String result = null;
-		
+
 		MultivaluedMap<String, Object> mvm = res.getMetadata();
-		String uri = (String) ((ArrayList<Object>) mvm.get("Location")).get(0);
+		String uri = (String) mvm.get("Location").get(0);
 		verbose("extractId:uri=" + uri);
 		String[] segments = uri.split("/");
 		result = segments[segments.length - 1];
 		verbose("id=" + result);
-		
+
 		return result;
-	}	
+	}
 
 	/**
 	 * Extract part.
@@ -177,7 +167,7 @@ public abstract class CollectionSpaceIntegrationTest {
 
 		return obj;
 	}
-	
+
 	/**
 	 * Verbose.
 	 * 
@@ -185,37 +175,6 @@ public abstract class CollectionSpaceIntegrationTest {
 	 */
 	void verbose(String msg) {
 		System.out.println(msg);
-	}
-
-	/**
-	 * Verbose.
-	 * 
-	 * @param msg the msg
-	 * @param o the o
-	 * @param clazz the clazz
-	 */
-	void verbose(String msg, Object o, Class clazz) {
-		try {
-			verbose(msg);
-			JAXBContext jc = JAXBContext.newInstance(clazz);
-			Marshaller m = jc.createMarshaller();
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			m.marshal(o, System.out);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Verbose map.
-	 * 
-	 * @param map the map
-	 */
-	void verboseMap(MultivaluedMap map) {
-		for (Object entry : map.entrySet()) {
-			MultivaluedMap.Entry mentry = (MultivaluedMap.Entry) entry;
-			verbose("  name=" + mentry.getKey() + " value=" + mentry.getValue());
-		}
 	}
 
 }

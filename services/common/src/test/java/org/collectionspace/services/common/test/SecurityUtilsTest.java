@@ -75,7 +75,7 @@ public class SecurityUtilsTest extends AbstractSecurityTestBase {
 	}
 
 	@Test
-	public void idenfitiferProbeFindsSsoId() throws JAXBException, IllegalArgumentException, IllegalAccessException,
+	public void identifierProbeFindsSsoId() throws JAXBException, IllegalArgumentException, IllegalAccessException,
 			NoSuchFieldException, SecurityException {
 		testBanner("identifier probe finds sso id");
 
