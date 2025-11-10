@@ -31,13 +31,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+
 import javax.xml.namespace.QName;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.MarshalException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,15 +57,16 @@ public class JaxbUtils {
      * @param clazz class of the jaxb object
      * @return
      */
-    public static String toString(Object o, Class<?> clazz) {    	
+    public static String toString(Object o, Class<?> clazz) {
         StringWriter sw = new StringWriter();
-        
+
         try {
+            // todo: creating a new jaxbcontext is heavy
             JAXBContext jc = JAXBContext.newInstance(clazz);
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(o, sw);
-        } catch (javax.xml.bind.MarshalException e) {
+        } catch (MarshalException e) {
         	//
         	// If the JAX-B object we're trying to marshal doesn't have an @XmlRootElement, then we need another
         	// approach.
@@ -72,10 +75,10 @@ public class JaxbUtils {
         } catch (JAXBException e) {
 			logger.error(e.getMessage());
 		}
-        
+
         return sw.toString();
     }
-    
+
     /*
      * Use this to marshal a JAX-B object that has no @XmlRootElement
      */
@@ -86,11 +89,11 @@ public class JaxbUtils {
             JAXBContext jc = JAXBContext.newInstance(clazz);
 	    	Marshaller marshaller = jc.createMarshaller();
 	    	marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-	    	marshaller.marshal(new JAXBElement(new QName("uri","local"), clazz, o), sw);
+	    	marshaller.marshal(new JAXBElement(new QName("uri", "local"), clazz, o), sw);
     	} catch (Exception e) {
     		logger.debug(e.getMessage());
     	}
-    	
+
         return sw.toString();
     }
 
@@ -141,19 +144,14 @@ public class JaxbUtils {
     public static Object getValue(Object o, String methodName)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (methodName == null) {
-            String msg = methodName + " cannot be null";
+            String msg = "methodName cannot be null";
             logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
         Class c = o.getClass();
         Method m = c.getMethod(methodName);
 
-        Object r = m.invoke(o);
-//        if (logger.isDebugEnabled()) {
-//            logger.debug("getValue returned value=" + r
-//                    + " for " + c.getName());
-//        }
-        return r;
+        return m.invoke(o);
     }
 
     /**
@@ -171,7 +169,7 @@ public class JaxbUtils {
     public static Object setValue(Object o, String methodName, Class argType, Object argValue)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (methodName == null) {
-            String msg = methodName + " cannot be null";
+            String msg = "methodName cannot be null";
             logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -183,10 +181,7 @@ public class JaxbUtils {
         Class c = o.getClass();
         Method m = c.getMethod(methodName, argType);
         Object r = m.invoke(o, argValue);
-        if (logger.isTraceEnabled() == true) {
-            logger.trace("Completed invocation of " + methodName
-                    + " for " + c.getName() + "with value=" + argValue.toString());
-        }
+        logger.trace("Completed invocation of {} for {}with value={}", methodName, c.getName(), argValue.toString());
         return r;
     }
 }

@@ -31,12 +31,13 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.io.FileUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
@@ -52,9 +53,6 @@ import org.w3c.dom.Document;
  * $LastChangedRevision: 2261 $
  * $LastChangedDate: 2010-05-28 16:52:22 -0700 (Fri, 28 May 2010) $
  */
-
-// FIXME: http://issues.collectionspace.org/browse/CSPACE-1685
-
 public class CollectionSpaceClientUtils {
 
     //Maven's base directory -i.e., the one containing the current pom.xml
@@ -83,14 +81,14 @@ public class CollectionSpaceClientUtils {
  
     static protected String extractIdFromResponseMetadata(MultivaluedMap<String, Object> mvm) {
     	// mvm may return a java.net.URI which complains about casting to String...
-    	String uri = ((List<Object>) mvm.get("Location")).get(0).toString();
+    	String uri = mvm.get("Location").get(0).toString();
         if (logger.isDebugEnabled()) {
-            logger.debug("extractId:uri=" + uri);
+            logger.debug("extractId:uri={}", uri);
         }
         String[] segments = uri.split("/");
         String id = segments[segments.length - 1];
         if (logger.isDebugEnabled()) {
-            logger.debug("id=" + id);
+            logger.debug("id={}", id);
         }
         return id;
     }
@@ -111,8 +109,7 @@ public class CollectionSpaceClientUtils {
         if (payloadInputPart != null) {
         	result = payloadInputPart.getBody();
         } else if (logger.isWarnEnabled() == true) {
-        	logger.warn("Payload part: " + label +
-        			" is missing from payload: " + input.getName());
+            logger.warn("Payload part: {} is missing from payload: {}", label, input.getName());
         }
         return result;
     }
@@ -139,7 +136,7 @@ public class CollectionSpaceClientUtils {
             logger.debug("Parts:");
             for (InputPart part : parts) {
                 partLabel = part.getHeaders().getFirst("label");
-                logger.debug("part = " + partLabel);
+                logger.debug("part = {}", partLabel);
             }
         }
         boolean partLabelMatched = false;
@@ -147,33 +144,27 @@ public class CollectionSpaceClientUtils {
             partLabel = part.getHeaders().getFirst("label");
             if (label.equalsIgnoreCase(partLabel)) {
                 partLabelMatched = true;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("found part" + partLabel);
-                }
+                logger.debug("found part{}", partLabel);
                 String partStr = part.getBodyAsString();
                 if (partStr == null || partStr.trim().isEmpty()) {
-                    logger.warn("Part '" + label + "' in multipart body is empty.");
+                    logger.warn("Part '{}' in multipart body is empty.", label);
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("extracted part as str=\n" + partStr);
-                    }
+                    logger.debug("extracted part as str=\n{}", partStr);
                     obj = part.getBody(clazz, null);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("extracted part as obj=\n",
-                                objectAsXmlString(obj, clazz));
+                        logger.debug("extracted part as obj=\n", objectAsXmlString(obj, clazz));
                     }
                 }
                 break;
             }
         }
         if (!partLabelMatched) {
-            logger.warn("Could not find part '" + label + "' in multipart body.");
+            logger.warn("Could not find part '{}' in multipart body.", label);
             // In the event that getBodyAsString() or getBody(), above, do *not*
             // throw an IOException, but getBody() nonetheless retrieves a null object.
             // This *may* be unreachable.
         } else if (obj == null) {
-            logger.warn("Could not extract part '" + label
-                    + "' in multipart body as an object.");
+            logger.warn("Could not extract part '{}' in multipart body as an object.", label);
         }
         return obj;
     }
@@ -200,9 +191,7 @@ public class CollectionSpaceClientUtils {
                 try {
                     bais.close();
                 } catch (Exception e) {
-                	if (logger.isDebugEnabled() == true) {
-                		e.printStackTrace();
-                	}
+                    logger.debug("Error closing input stream", e);
                 }
             }
         }
@@ -225,7 +214,7 @@ public class CollectionSpaceClientUtils {
                     Boolean.TRUE);
             m.marshal(o, sw);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.debug("Error creating JAXBContext/Marshaller", e);
         }
         return sw.toString();
     }
