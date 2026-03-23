@@ -11,19 +11,8 @@ public class ObjectFactory {
 
     private static final QName _Permission_QNAME = new QName("http://collectionspace.org/services/authorization/perms", "permission");
 
-    public ObjectFactory() {
-    }
-
     public Permission createPermission() {
         return new Permission();
-    }
-
-    public PermissionsList createPermissionsList() {
-        return new PermissionsList();
-    }
-
-    public PermissionAction createPermissionAction() {
-        return new PermissionAction();
     }
 
     @XmlElementDecl(namespace = "http://collectionspace.org/services/authorization/perms", name = "permission")
