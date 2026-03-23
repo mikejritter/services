@@ -19,61 +19,6 @@ public class ObjectFactory {
     private static final QName _RolesList_QNAME = new QName(AUTHORIZATION_NS, "roles_list");
     private static final QName _PermissionRole_QNAME = new QName(AUTHORIZATION_NS, "permission_role");
 
-    public ObjectFactory() {
-    }
-
-    public XAccountRolesList createXAccountRolesList() {
-        return new XAccountRolesList();
-    }
-
-    public XAccountRoleListItem createXAccountRoleListItem() {
-        return new XAccountRoleListItem();
-    }
-
-    public PermissionRoleRel createPermissionRoleRel() {
-        return new PermissionRoleRel();
-    }
-
-    public AccountPermission createAccountPermission() {
-        return new AccountPermission();
-    }
-
-    public Role createRole() {
-        return new Role();
-    }
-
-    public AccountRole createAccountRole() {
-        return new AccountRole();
-    }
-
-    public AccountRoleRel createAccountRoleRel() {
-        return new AccountRoleRel();
-    }
-
-    public PermissionsRolesList createPermissionsRolesList() {
-        return new PermissionsRolesList();
-    }
-
-    public PermissionRole createPermissionRole() {
-        return new PermissionRole();
-    }
-
-    public RolesList createRolesList() {
-        return new RolesList();
-    }
-
-    public PermissionValue createPermissionValue() {
-        return new PermissionValue();
-    }
-
-    public RoleValue createRoleValue() {
-        return new RoleValue();
-    }
-
-    public AccountValue createAccountValue() {
-        return new AccountValue();
-    }
-
     @XmlElementDecl(namespace = AUTHORIZATION_NS, name = "account_role")
     public JAXBElement<AccountRole> createAccountRole(AccountRole value) {
         return new JAXBElement<>(_AccountRole_QNAME, AccountRole.class, null, value);
