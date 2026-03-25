@@ -117,7 +117,7 @@ public class Permission {
         targetEntity = PermissionAction.class,
         cascade = {CascadeType.ALL}
     )
-    @JoinColumn(name = "ACTION__PERMISSION__CSID")
+    @JoinColumn(name = "ACTION__PERMISSION_CSID")
     public List<PermissionAction> getAction() {
         return action;
     }
