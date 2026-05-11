@@ -45,7 +45,10 @@ public class UpdateLocationListener extends AbstractCSEventSyncListenerImpl {
 	 * <ul>
 	 * <li>If the plant is dead, set currentLocation to none</li>
 	 * <li>Set the previousLocation field to the previous value of the currentLocation field</li>
-	 * </ui>
+	 * <li>If the action code is Moved or Planted Out, clear the Garden Coordinate Information
+	 *     (georeference) fields so that the garden location does not become out-of-sync with
+	 *     the lat/longs</li>
+	 * </ul>
 	 */
 	@Override
 	public void handleCSEvent(Event event) {
@@ -76,10 +79,23 @@ public class UpdateLocationListener extends AbstractCSEventSyncListenerImpl {
 				 */
 				ec.setProperty(CreateVersionListener.SKIP_PROPERTY, true);
 			}
+			else if (actionCode != null && isGeoreferenceErasingActionCode(actionCode)) {
+				/*
+				 * If the document is created with an action code of Moved or Planted Out, clear the
+				 * georeference fields. Save the document to persist the cleared values; this also
+				 * causes versioning via documentModified, so skip the documentCreated versioning.
+				 */
+				clearGeoreferenceFields(doc);
+				context.getCoreSession().saveDocument(doc);
+				ec.setProperty(CreateVersionListener.SKIP_PROPERTY, true);
+			}
 		}
 		else {
 			if (actionCode != null && RefNameUtils.doShortIDsMatch(actionCode, MovementBotGardenConstants.DEAD_ACTION_CODE)) {
 				doc.setProperty(MovementConstants.CURRENT_LOCATION_SCHEMA_NAME, MovementConstants.CURRENT_LOCATION_FIELD_NAME, MovementConstants.NONE_LOCATION);
+			}
+			else if (actionCode != null && isGeoreferenceErasingActionCode(actionCode)) {
+				clearGeoreferenceFields(doc);
 			}
 
 			DocumentModel previousDoc = (DocumentModel) context.getProperty(CoreEventConstants.PREVIOUS_DOCUMENT_MODEL);
@@ -89,6 +105,27 @@ public class UpdateLocationListener extends AbstractCSEventSyncListenerImpl {
 
 			doc.setProperty(MovementBotGardenConstants.PREVIOUS_LOCATION_SCHEMA_NAME, MovementBotGardenConstants.PREVIOUS_LOCATION_FIELD_NAME, previousLocation);
 		}
+	}
+
+	private boolean isGeoreferenceErasingActionCode(String actionCode) {
+		return RefNameUtils.doShortIDsMatch(actionCode, MovementBotGardenConstants.MOVED_ACTION_CODE)
+				|| RefNameUtils.doShortIDsMatch(actionCode, MovementBotGardenConstants.PLANTED_OUT_ACTION_CODE);
+	}
+
+	private void clearGeoreferenceFields(DocumentModel doc) {
+		String schema = MovementBotGardenConstants.GEOREFERENCE_SCHEMA_NAME;
+		doc.setProperty(schema, MovementBotGardenConstants.DECIMAL_LATITUDE_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.DECIMAL_LONGITUDE_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEODETIC_DATUM_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.COORD_UNCERTAINTY_IN_METERS_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.POINT_RADIUS_SPATIAL_FIT_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REFERENCED_BY_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_DATE_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_PROTOCOL_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_SOURCE_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_VERIFICATION_STATUS_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_REMARKS_FIELD_NAME, null);
+		doc.setProperty(schema, MovementBotGardenConstants.GEO_REF_PLACE_NAME_FIELD_NAME, null);
 	}
 	
 	@Override
