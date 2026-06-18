@@ -39,7 +39,7 @@ public class TaxonModel {
 
 	public static String determinationTaxon(final CollectionobjectsNaturalhistory naturalHistory) {
 		String taxon = null;
-		if (naturalHistory != null && naturalHistory.getTaxonomicIdentGroupList() != null) {
+		if (naturalHistory != null && naturalHistory.getDeterminationHistoryGroupList() != null) {
 			DeterminationHistoryGroupList determinationGroupList = naturalHistory.getDeterminationHistoryGroupList();
 			List<DeterminationHistoryGroup> determinationGroups = determinationGroupList.getDeterminationHistoryGroup();
 			if (!determinationGroups.isEmpty()) {
