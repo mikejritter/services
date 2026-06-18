@@ -14,12 +14,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
   jaxb:version="2.0"
-  xmlns="http://collectionspace.org/services/collectionobject/domain/naturalhistory_extension"
-  targetNamespace="http://collectionspace.org/services/collectionobject/domain/naturalhistory_extension"
+  xmlns="http://collectionspace.org/services/collectionobject/domain/naturalhistory"
+  targetNamespace="http://collectionspace.org/services/collectionobject/domain/naturalhistory"
   version="0.1"
 >
   <!-- collection-object for museum of natural history  -->
-  <xs:element name="collectionobjects_naturalhistory_extension">
+  <xs:element name="collectionobjects_naturalhistory">
     <!-- keep old class name -->
     <xs:annotation>
       <xs:appinfo>
