@@ -6,7 +6,7 @@ import javax.xml.bind.JAXBException;
 import org.collectionspace.collectionspace_core.CollectionSpaceCore;
 import org.collectionspace.services.collectionobject.CollectionobjectsCommon;
 import org.collectionspace.services.collectionobject.domain.nagpra.CollectionObjectsNAGPRA;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.CollectionobjectsNaturalhistory;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.CollectionobjectsNaturalhistory;
 
 /**
  * Singleton for the {@link JAXBContext} which the AdvancedSearch will use

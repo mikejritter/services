@@ -2,7 +2,7 @@ package org.collectionspace.services.advancedsearch.mapper;
 
 import static org.collectionspace.services.client.CollectionSpaceClient.COLLECTIONSPACE_CORE_SCHEMA;
 import static org.collectionspace.services.client.CollectionSpaceClient.NAGPRA_EXTENSION_NAME;
-import static org.collectionspace.services.client.CollectionSpaceClient.NATURALHISTORY_EXT_EXTENSION_NAME;
+import static org.collectionspace.services.client.CollectionSpaceClient.NATURALHISTORY_EXTENSION_NAME;
 import static org.collectionspace.services.client.CollectionSpaceClient.PART_COMMON_LABEL;
 import static org.collectionspace.services.client.CollectionSpaceClient.PART_LABEL_SEPARATOR;
 
@@ -29,7 +29,7 @@ import org.collectionspace.services.client.PayloadOutputPart;
 import org.collectionspace.services.client.PoxPayloadOut;
 import org.collectionspace.services.collectionobject.CollectionobjectsCommon;
 import org.collectionspace.services.collectionobject.domain.nagpra.CollectionObjectsNAGPRA;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.CollectionobjectsNaturalhistory;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.CollectionobjectsNaturalhistory;
 import org.collectionspace.services.nuxeo.client.handler.CSDocumentModelList.CSDocumentModelResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class CollectionObjectMapper {
             CollectionObjectClient.SERVICE_NAME + PART_LABEL_SEPARATOR + PART_COMMON_LABEL;
 
     private static final String NATHIST_PART_NAME =
-            CollectionObjectClient.SERVICE_NAME + PART_LABEL_SEPARATOR + NATURALHISTORY_EXT_EXTENSION_NAME;
+            CollectionObjectClient.SERVICE_NAME + PART_LABEL_SEPARATOR + NATURALHISTORY_EXTENSION_NAME;
 
     private static final String NAGPRA_PART_NAME =
             CollectionObjectClient.SERVICE_NAME + PART_LABEL_SEPARATOR + NAGPRA_EXTENSION_NAME;
@@ -64,7 +64,7 @@ public class CollectionObjectMapper {
     /**
      * Map a {@link CSDocumentModelResponse} to a {@link AdvancedsearchListItem}. This looks at the response for each
      * of the collectionspace_core, collectionobjects_common, collectionobjects_nagpra, and
-     * collectionobjects_naturalhistory_extension parts and pulls fields out of each based on the search specification.
+     * collectionobjects_naturalhistory parts and pulls fields out of each based on the search specification.
      * We don't differentiate between profiles here and instead return everything available for the ui.
      * <p>
      * Note that this doesn't handle the {@link AdvancedsearchListItem#setRelated(Boolean)} as that requires access to

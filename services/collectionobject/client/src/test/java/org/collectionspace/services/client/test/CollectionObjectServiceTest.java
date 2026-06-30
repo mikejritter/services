@@ -46,7 +46,7 @@ import org.collectionspace.services.collectionobject.OtherNumber;
 import org.collectionspace.services.collectionobject.ResponsibleDepartmentList;
 import org.collectionspace.services.collectionobject.TitleGroup;
 import org.collectionspace.services.collectionobject.TitleGroupList;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.CollectionobjectsNaturalhistory;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.CollectionobjectsNaturalhistory;
 import org.collectionspace.services.jaxb.AbstractCommonList;
 import org.testng.Assert;
 import org.testng.annotations.Test;

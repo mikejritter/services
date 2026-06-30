@@ -3,11 +3,11 @@ package org.collectionspace.services.advancedsearch.model;
 import java.util.List;
 
 import org.collectionspace.services.collectionobject.CollectionobjectsCommon;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.CollectionobjectsNaturalhistory;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.DeterminationHistoryGroup;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.DeterminationHistoryGroupList;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.TaxonomicIdentGroup;
-import org.collectionspace.services.collectionobject.domain.naturalhistory_extension.TaxonomicIdentGroupList;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.CollectionobjectsNaturalhistory;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.DeterminationHistoryGroup;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.DeterminationHistoryGroupList;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.TaxonomicIdentGroup;
+import org.collectionspace.services.collectionobject.domain.naturalhistory.TaxonomicIdentGroupList;
 
 public class TaxonModel {
 
@@ -39,7 +39,7 @@ public class TaxonModel {
 
 	public static String determinationTaxon(final CollectionobjectsNaturalhistory naturalHistory) {
 		String taxon = null;
-		if (naturalHistory != null && naturalHistory.getTaxonomicIdentGroupList() != null) {
+		if (naturalHistory != null && naturalHistory.getDeterminationHistoryGroupList() != null) {
 			DeterminationHistoryGroupList determinationGroupList = naturalHistory.getDeterminationHistoryGroupList();
 			List<DeterminationHistoryGroup> determinationGroups = determinationGroupList.getDeterminationHistoryGroup();
 			if (!determinationGroups.isEmpty()) {
