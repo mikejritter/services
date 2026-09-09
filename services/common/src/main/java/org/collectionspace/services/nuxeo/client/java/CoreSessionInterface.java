@@ -167,5 +167,9 @@ public interface CoreSessionInterface {
      */
     public DocumentModelList getChildren(DocumentRef parent) throws NuxeoException;
 
-    
+    /**
+     * @return The time this session was acquired, using System.nanoTime
+     */
+    long getAcquisitionTime();
+
 }
