@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import javax.transaction.TransactionManager;
 
 import org.collectionspace.services.common.context.ServiceContext;
@@ -329,6 +330,16 @@ public final class NuxeoClientEmbedded {
         	throw e;
         } finally {
         	repoSession.close();
+
+			long now = System.nanoTime();
+			long sessionTime = repoSession.getAcquisitionTime();
+			long elapsed = TimeUnit.NANOSECONDS.toMillis(now - sessionTime);
+			// 250ms is the default blocking time for the nuxeo pool; use it as a baseline for logging
+			// i.e. session used for longer than 250ms -> potential to block > 250ms
+			if (elapsed > 250) {
+				logger.warn("CoreSession used for {} ms", elapsed);
+			}
+
         	CoreSessionInterface wasRemoved = repositoryInstances.remove(key);
             if (logger.isTraceEnabled()) {
             	if (wasRemoved != null) {
