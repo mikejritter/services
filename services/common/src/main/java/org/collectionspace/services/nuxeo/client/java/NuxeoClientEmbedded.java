@@ -49,7 +49,7 @@ import org.springframework.aop.framework.ProxyFactory;
 public final class NuxeoClientEmbedded {
 
 	private Logger logger = LoggerFactory.getLogger(NuxeoClientEmbedded.class);
-	
+
     private final HashMap<String, CoreSessionInterface> repositoryInstances;
 
     private RepositoryManager repositoryMgr;
@@ -57,7 +57,7 @@ public final class NuxeoClientEmbedded {
     private static final NuxeoClientEmbedded instance = new NuxeoClientEmbedded();
 
 	private static final int MAX_CREATE_TRANSACTION_ATTEMPTS = 5;
-        
+
     /**
      * Constructs a new NuxeoClient. NOTE: Using {@link #getInstance()} instead
      * of this constructor is recommended.
@@ -65,7 +65,7 @@ public final class NuxeoClientEmbedded {
     private NuxeoClientEmbedded() {
         repositoryInstances = new HashMap<String, CoreSessionInterface>();
     }
-    
+
     public static NuxeoClientEmbedded getInstance() {
         return instance;
     }
@@ -82,7 +82,7 @@ public final class NuxeoClientEmbedded {
             try {
                 repo.getValue().close();
             } catch (Exception e) {
-                logger.debug("Error while trying to close " + repo, e);
+                logger.debug("Error while trying to close {}", repo, e);
             }
             it.remove();
         }
@@ -121,39 +121,40 @@ public final class NuxeoClientEmbedded {
     public CoreSessionInterface openRepository(RepositoryDomainType repoDomain) throws Exception {
         return openRepository(repoDomain.getRepositoryName(), ServiceContext.DEFAULT_TX_TIMEOUT);
     }
-    
+
     /*
      * Open a Nuxeo repo session using the passed in repoDomain and use the default tx timeout period
      */
     public CoreSessionInterface openRepository(String repoName) throws Exception {
         return openRepository(repoName, ServiceContext.DEFAULT_TX_TIMEOUT);
     }
-    
+
     private boolean startTransaction() {
     	boolean startedTransaction = false;
     	int attempts = 0;
-    	
-    	if (TransactionHelper.isTransactionActive() == false) {
-        	while (startedTransaction == false && attempts <= MAX_CREATE_TRANSACTION_ATTEMPTS) {        		
+
+    	if (!TransactionHelper.isTransactionActive()) {
+        	while (!startedTransaction && attempts <= MAX_CREATE_TRANSACTION_ATTEMPTS) {
         		try {
         			startedTransaction = TransactionHelper.startTransaction();
         		} catch (Exception e) {
-        			String traceMsg = String.format("Could not start a new transaction on thread '%d'", Thread.currentThread().getId());
+        			String traceMsg = String.format("Could not start a new transaction on thread '%d'",
+                                                    Thread.currentThread().threadId());
         			logger.trace(traceMsg);
         			boolean txState = TransactionHelper.isTransactionActive();
         			txState = TransactionHelper.isNoTransaction();
         			txState = TransactionHelper.isTransactionActiveOrMarkedRollback();
         			txState = TransactionHelper.isTransactionMarkedRollback();
         		}
-        		
-    	    	if (startedTransaction == false) {
-    	    		long currentThreadId = Thread.currentThread().getId();
+
+    	    	if (!startedTransaction) {
+    	    		long currentThreadId = Thread.currentThread().threadId();
         			boolean txState = TransactionHelper.isTransactionActive();
         			txState = TransactionHelper.isNoTransaction();
         			txState = TransactionHelper.isTransactionActiveOrMarkedRollback();
         			txState = TransactionHelper.isTransactionMarkedRollback();
-        			
-        			if (TransactionHelper.isTransactionActiveOrMarkedRollback() == true) {
+
+        			if (TransactionHelper.isTransactionActiveOrMarkedRollback()) {
         				try {
         					TransactionHelper.commitOrRollbackTransaction();
         				} catch (Exception e) {
@@ -167,8 +168,8 @@ public final class NuxeoClientEmbedded {
     		logger.warn("A request to start a new transaction was made, but a transaction is already open.");
     		startedTransaction = true;
     	}
-    		
-		if (startedTransaction == false) {
+
+		if (!startedTransaction) {
 			String errMsg = String.format("Attempted %d time(s) to start a new transaction, but failed.", attempts);
     		logger.error(errMsg);
         }
@@ -178,7 +179,7 @@ public final class NuxeoClientEmbedded {
 
     public CoreSessionInterface openRepository(String repoName, int timeoutSeconds) throws Exception {
     	CoreSessionInterface result = null;
-    	
+
     	//
     	// If the called passed in a custom timeout setting, use it to configure Nuxeo's transaction manager.
     	//
@@ -190,30 +191,29 @@ public final class NuxeoClientEmbedded {
             		logger.debug("TransactionHelper's manager is different than NuxeoContainer's.");
             	}
             }
-    		
+
     		transactionMgr.setTransactionTimeout(timeoutSeconds); // For the current thread only
     		if (logger.isInfoEnabled()) {
-    			logger.info(String.format("Changing current request's transaction timeout period to %d seconds",
-    					timeoutSeconds));
+    			logger.info("Changing current request's transaction timeout period to {} seconds", timeoutSeconds);
     		}
     	}
-    	
+
     	//
     	// Start a new Nuxeo transaction
     	//
     	boolean startedTransaction = false;
-    	if (TransactionHelper.isTransactionActive() == false) {
+    	if (!TransactionHelper.isTransactionActive()) {
     		startedTransaction = startTransaction();
-	    	if (startedTransaction == false) {
+	    	if (!startedTransaction) {
 	    		String errMsg = String.format("Could not start a Nuxeo transaction with the TransactionHelper class on thread '%d'.",
-	    				Thread.currentThread().getId());
+                                              Thread.currentThread().threadId());
 	    		logger.error(errMsg);
 	    		throw new Exception(errMsg);
 	    	}
     	} else {
     		logger.warn("A request to start a new transaction was made, but a transaction is already open.");
     	}
-    	
+
     	//
     	// From the repository name that the caller passed in, get an instance of Nuxeo's Repository class.
     	// The Repository class is just a metadata description of the repository.
@@ -223,9 +223,9 @@ public final class NuxeoClientEmbedded {
         	repository = getRepositoryManager().getRepository(repoName);
         } else {
         	repository = getRepositoryManager().getDefaultRepository();
-        	logger.warn(String.format("Using default repository '%s' because no name was specified.", repository.getName()));
+        	logger.warn("Using default repository '{}' because no name was specified.", repository.getName());
         }
-        
+
         //
         // Using the Repository class, get a Spring AOP proxied instance.  We use Spring AOP to "wrap" all calls to the
         // Nuxeo repository so we can check for network related failures and perform a series of retries.
@@ -233,28 +233,28 @@ public final class NuxeoClientEmbedded {
         if (repository != null) {
             result = getCoreSessionWrapper(repository);
             if (result != null) {
-	        	logger.trace(String.format("A new transaction was started on thread '%d' : %s.",
-	        			Thread.currentThread().getId(), startedTransaction ? "true" : "false"));
-	        	logger.trace(String.format("Added a new repository instance to our repo list.  Current count is now: %d",
-	        			repositoryInstances.size()));
+	        	logger.trace("A new transaction was started on thread '{}' : {}.", Thread.currentThread().threadId(),
+                             startedTransaction ? "true" : "false");
+	        	logger.trace("Added a new repository instance to our repo list.  Current count is now: {}",
+                             repositoryInstances.size());
             }
         }
-        
+
         if (repository == null || result == null) {
         	//
         	// If we couldn't open a repo session, we need to close the transaction we started.
         	//
-        	if (startedTransaction == true) {
+        	if (startedTransaction) {
         		TransactionHelper.commitOrRollbackTransaction();
         	}
         	String errMsg = String.format("Could not open a session to the Nuxeo repository='%s'", repoName);
         	logger.error(errMsg);
         	throw new Exception(errMsg);
-        }    	
-    	
+        }
+
         return result;
     }
-    
+
     //
     // Returns a proxied interface to a Nuxeo repository instance.  Our proxy uses Spring AOP to
     // wrap each call to the Nuxeo repo with code that catches network related errors/exceptions and
@@ -262,19 +262,19 @@ public final class NuxeoClientEmbedded {
     //
     private CoreSessionInterface getAOPProxy(CoreSession repositoryInstance) {
     	CoreSessionInterface result = null;
-    	
+
     	try {
 			ProxyFactory factory = new ProxyFactory(new CoreSessionWrapper(repositoryInstance));
 			factory.addAdvice(new RepositoryInstanceWrapperAdvice());
 			factory.setExposeProxy(true);
 			result = (CoreSessionInterface)factory.getProxy();
     	} catch (Exception e) {
-    		logger.error("Could not create AOP proxy for: " + CoreSessionWrapper.class.getName(), e);
+            logger.error("Could not create AOP proxy for: {}", CoreSessionWrapper.class.getName(), e);
     	}
-    	
+
     	return result;
     }
-    
+
 	private NuxeoPrincipal getSystemPrincipal() {
         return new SystemPrincipal(null);
 	}
@@ -314,22 +314,22 @@ public final class NuxeoClientEmbedded {
     	return result;
     }
 
-    public void releaseRepository(CoreSessionInterface repoSession) throws Exception {
-    	String key = repoSession.getSessionId();
-    	String name = repoSession.getRepositoryName();
+	public void releaseRepository(CoreSessionInterface repoSession) throws Exception {
+		String key = repoSession.getSessionId();
+		String name = repoSession.getRepositoryName();
 
-    	//
-    	// The caller should have already called the .save() method, but just in
-    	// case they didn't, let's try calling it again.
-    	//
-        try {
-        	repoSession.save();
-        } catch (Exception e) {
-        	String errMsg = String.format("Possible data loss.  Could not save and/or close the Nuxeo repository name = '%s'.", name);
-        	logger.warn(errMsg, e);
-        	throw e;
-        } finally {
-        	repoSession.close();
+		//
+		// The caller should have already called the .save() method, but just in
+		// case they didn't, let's try calling it again.
+		//
+		try {
+			repoSession.save();
+		} catch (Exception e) {
+			String errMsg = String.format("Possible data loss.  Could not save and/or close the Nuxeo repository name = '%s'.", name);
+			logger.warn(errMsg, e);
+			throw e;
+		} finally {
+			repoSession.close();
 
 			long now = System.nanoTime();
 			long sessionTime = repoSession.getAcquisitionTime();
@@ -340,27 +340,27 @@ public final class NuxeoClientEmbedded {
 				logger.warn("CoreSession used for {} ms", elapsed);
 			}
 
-        	CoreSessionInterface wasRemoved = repositoryInstances.remove(key);
-            if (logger.isTraceEnabled()) {
-            	if (wasRemoved != null) {
-	            	logger.trace("Removed a repository instance from our repo list.  Current count is now: "
-	            			+ repositoryInstances.size());
-            	} else {
-            		logger.trace("Could not remove a repository instance from our repo list.  Current count is now: "
-	            			+ repositoryInstances.size());
-            	}
-            }            
-            //
-            // Last but not least, try to commit the current Nuxeo-related transaction.
-            //
-            if (TransactionHelper.isTransactionActiveOrMarkedRollback() == true) {
-            	TransactionHelper.commitOrRollbackTransaction();
-            	logger.trace(String.format("Transaction closed on thread '%d'", Thread.currentThread().getId()));
-            } else {
-            	String warnMsg = String.format("Closed a Nuxeo repository session on thread '%d' without closing the containing transaction.",
-            			Thread.currentThread().getId());
-            	logger.warn(warnMsg);
-            }
-        }
-    }    
+			CoreSessionInterface wasRemoved = repositoryInstances.remove(key);
+			if (logger.isTraceEnabled()) {
+				if (wasRemoved != null) {
+					logger.trace("Removed a repository instance from our repo list.  Current count is now: {}",
+								 repositoryInstances.size());
+				} else {
+					logger.trace("Could not remove a repository instance from our repo list.  Current count is now: {}",
+								 repositoryInstances.size());
+				}
+			}
+			//
+			// Last but not least, try to commit the current Nuxeo-related transaction.
+			//
+			if (TransactionHelper.isTransactionActiveOrMarkedRollback()) {
+				TransactionHelper.commitOrRollbackTransaction();
+				logger.trace("Transaction closed on thread '{}'", Thread.currentThread().threadId());
+			} else {
+				String warnMsg = String.format("Closed a Nuxeo repository session on thread '%d' without closing the containing transaction.",
+											   Thread.currentThread().threadId());
+				logger.warn(warnMsg);
+			}
+		}
+	}
 }
